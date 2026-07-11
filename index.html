@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Engine V12 - Heatmap Analyzer</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&display=swap');
+
+        :root {
+            --bg-color: #0b0f19;
+            --panel-bg: #0d111a;
+            --text-main: #e2e8f0;
+            --text-muted: #64748b;
+            --accent-blue: #4f6bff;
+            --accent-green: #2ee59d;
+            --border-color: #1e293b;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Control Panel */
+        .control-panel {
+            width: 400px;
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            z-index: 10;
+        }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .header h1 { font-size: 1.2rem; margin: 0; }
+        .status { color: var(--accent-green); font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
+        .status::before { content: ''; width: 8px; height: 8px; background-color: var(--accent-green); border-radius: 50%; }
+
+        /* Sliders */
+        .slider-group { display: flex; flex-direction: column; gap: 15px; }
+        .slider-row { display: flex; flex-direction: column; gap: 5px; }
+        .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 15px; width: 8px; background: #fff; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: var(--accent-blue); }
+
+        /* Visualization Area (Right side) */
+        .visualization-area {
+            flex: 1;
+            background-color: #050505;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Simulador de Video/Mapa de Calor */
+        .heat-layer {
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(circle at center, #ffffff 0%, #ffeb3b 20%, #f44336 40%, #9c27b0 60%, #0000ff 80%, #000 100%);
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; /* Forma orgánica simluando un cuerpo */
+            transition: all 0.1s ease-out;
+            filter: hue-rotate(0deg) blur(18px) contrast(1.5);
+            animation: breathe 4s infinite alternate ease-in-out;
+        }
+
+        @keyframes breathe {
+            0% { transform: scale(1) rotate(0deg); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+            100% { transform: scale(1.05) rotate(5deg); border-radius: 50% 50% 30% 70% / 60% 40% 60% 40%; }
+        }
+
+        /* UI Overlays on video */
+        .overlay-data {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-size: 2rem;
+            color: rgba(255,255,255,0.7);
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="control-panel">
+        <div class="header">
+            <h1>STUDIO ENGINE V12</h1>
+            <div class="status">GLOBAL GRAVITY</div>
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-row">
+                <div class="slider-header">
+                    <span>CALIBRATE TEMP (Color)</span>
+                    <span id="val-temp">0°</span>
+                </div>
+                <input type="range" id="slide-temp" min="-180" max="180" value="0">
+            </div>
+            
+            <div class="slider-row">
+                <div class="slider-header">
+                    <span>STORM DENSITY (Blur)</span>
+                    <span id="val-density">18 PX</span>
+                </div>
+                <input type="range" id="slide-density" min="0" max="50" value="18">
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <span>TURBULENCE CHAOS (Contrast)</span>
+                    <span id="val-chaos">1.5X</span>
+                </div>
+                <input type="range" id="slide-chaos" min="5" max="30" value="15">
+            </div>
+        </div>
+    </div>
+
+    <div class="visualization-area">
+        <div class="heat-layer" id="heat-render"></div>
+        <div class="overlay-data" id="speed-overlay">VELOCIDAD: 10.50 KM/H</div>
+    </div>
+
+    <script>
+        const tempSlider = document.getElementById('slide-temp');
+        const densitySlider = document.getElementById('slide-density');
+        const chaosSlider = document.getElementById('slide-chaos');
+        const heatRender = document.getElementById('heat-render');
+
+        function updateVisuals() {
+            const hue = tempSlider.value;
+            const blur = densitySlider.value;
+            const contrast = chaosSlider.value / 10;
+
+            // Actualizar textos
+            document.getElementById('val-temp').textContent = hue + '°';
+            document.getElementById('val-density').textContent = blur + ' PX';
+            document.getElementById('val-chaos').textContent = contrast + 'X';
+
+            // Inyectar CSS dinámico a la capa visual
+            heatRender.style.filter = `hue-rotate(${hue}deg) blur(${blur}px) contrast(${contrast})`;
+        }
+
+        // Escuchar eventos
+        tempSlider.addEventListener('input', updateVisuals);
+        densitySlider.addEventListener('input', updateVisuals);
+        chaosSlider.addEventListener('input', updateVisuals);
+    </script>
+</body>
+</html>
