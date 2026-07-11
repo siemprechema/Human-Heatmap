@@ -9,7 +9,7 @@
 
         :root {
             --bg-color: #000000;
-            --panel-bg: rgba(245, 245, 245, 0.95); /* Un gris ultra claro/blanco para el panel */
+            --panel-bg: rgba(245, 245, 245, 0.95);
             --text-main: #0f172a;
             --text-muted: #475569;
             --accent-red: #ef4444;
@@ -36,6 +36,7 @@
             filter: blur(15px) contrast(2.5);
         }
 
+        /* Panel más compacto verticalmente */
         .panel {
             position: absolute;
             top: 50%;
@@ -44,30 +45,30 @@
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
-            padding: 20px; /* Aumentado para dar más aire general */
+            padding: 15px 20px; /* Menos padding vertical */
             z-index: 10;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
         }
 
         .control-panel {
-            width: 260px; /* Ligeramente más ancho para acomodar el padding extra */
-            max-height: 85vh; 
+            width: 260px; 
+            max-height: 90vh; 
             overflow-y: auto;
-            display: flex; flex-direction: column; gap: 16px; /* Más separación entre bloques */
+            display: flex; flex-direction: column; 
+            gap: 12px; /* Reducido de 16px para mayor compresión vertical */
         }
 
         .control-panel::-webkit-scrollbar { width: 4px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
         .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
-        /* Eliminado el background del header para evitar el cuadro blanco */
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 15px; 
-            position: sticky; top: -20px; 
-            z-index: 2; margin-top: -20px; padding-top: 20px;
+            padding-bottom: 10px; /* Reducido */
+            position: sticky; top: -15px; 
+            z-index: 2; margin-top: -15px; padding-top: 15px;
         }
         
         .header h1 { font-size: 0.9rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
@@ -76,23 +77,23 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .slider-group { display: flex; flex-direction: column; gap: 18px; margin-top: 5px;}
-        .slider-row { display: flex; flex-direction: column; gap: 8px; }
+        /* Sliders más comprimidos */
+        .slider-group { display: flex; flex-direction: column; gap: 14px; margin-top: 0px;}
+        .slider-row { display: flex; flex-direction: column; gap: 6px; }
         .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-muted); font-weight: bold; }
         
         .header-left { display: flex; align-items: center; gap: 8px; }
         .info-btn {
             background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
-            border-radius: 50%; width: 16px; height: 16px; font-size: 9px; cursor: pointer;
+            border-radius: 50%; width: 14px; height: 14px; font-size: 8px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: all 0.2s;
         }
         .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
 
-        /* Tooltips con más padding y separación (margin-top) */
         .info-text {
             display: none; font-size: 0.65rem; color: #f8fafc; background: #1e293b;
-            padding: 12px; border-left: 3px solid var(--accent-blue); line-height: 1.4; 
-            margin-top: 8px; margin-bottom: 4px; border-radius: 4px;
+            padding: 10px; border-left: 3px solid var(--accent-blue); line-height: 1.3; 
+            margin-top: 6px; margin-bottom: 2px; border-radius: 4px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
@@ -103,16 +104,15 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -5px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px;}
         
-        /* Colores Temáticos Congruentes */
-        #s-blood::-webkit-slider-runnable-track { background: #ef4444; } /* Rojo vivo */
-        #s-muscle::-webkit-slider-runnable-track { background: #f97316; } /* Naranja cinético */
-        #s-inflammation::-webkit-slider-runnable-track { background: #991b1b; } /* Rojo oscuro/inflamado */
-        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); } /* Frío a Calor */
-        #s-humidity::-webkit-slider-runnable-track { background: #06b6d4; } /* Cyan / Agua en el aire */
-        #s-sweat::-webkit-slider-runnable-track { background: #60a5fa; } /* Azul claro / Líquido */
-        #s-age::-webkit-slider-runnable-track { background: #9ca3af; } /* Gris / Desgaste */
-        #s-fat::-webkit-slider-runnable-track { background: #fde047; } /* Amarillo / Lípido */
-        #s-disease::-webkit-slider-runnable-track { background: #8b5cf6; } /* Púrpura / Anomalía */
+        #s-blood::-webkit-slider-runnable-track { background: #ef4444; } 
+        #s-muscle::-webkit-slider-runnable-track { background: #f97316; } 
+        #s-inflammation::-webkit-slider-runnable-track { background: #991b1b; } 
+        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); } 
+        #s-humidity::-webkit-slider-runnable-track { background: #06b6d4; } 
+        #s-sweat::-webkit-slider-runnable-track { background: #60a5fa; } 
+        #s-age::-webkit-slider-runnable-track { background: #9ca3af; } 
+        #s-fat::-webkit-slider-runnable-track { background: #fde047; } 
+        #s-disease::-webkit-slider-runnable-track { background: #8b5cf6; } 
 
     </style>
 </head>
@@ -130,7 +130,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>A. BLOOD FLOW</span>
+                        <span>BLOOD FLOW</span>
                         <button class="info-btn" onclick="toggleInfo('i-blood', this)">i</button>
                     </div>
                     <span id="v-blood">50%</span>
@@ -142,7 +142,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>B. MUSCLE ACTIVITY</span>
+                        <span>MUSCLE ACTIVITY</span>
                         <button class="info-btn" onclick="toggleInfo('i-muscle', this)">i</button>
                     </div>
                     <span id="v-muscle">50%</span>
@@ -154,7 +154,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>C. INFLAMMATION</span>
+                        <span>INFLAMMATION</span>
                         <button class="info-btn" onclick="toggleInfo('i-inflammation', this)">i</button>
                     </div>
                     <span id="v-inflammation">50%</span>
@@ -166,7 +166,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>D. AMBIENT TEMP</span>
+                        <span>AMBIENT TEMP</span>
                         <button class="info-btn" onclick="toggleInfo('i-ambient', this)">i</button>
                     </div>
                     <span id="v-ambient">50%</span>
@@ -178,7 +178,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>E. HUMIDITY</span>
+                        <span>HUMIDITY</span>
                         <button class="info-btn" onclick="toggleInfo('i-humidity', this)">i</button>
                     </div>
                     <span id="v-humidity">50%</span>
@@ -190,7 +190,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>F. SWEATING</span>
+                        <span>SWEATING</span>
                         <button class="info-btn" onclick="toggleInfo('i-sweat', this)">i</button>
                     </div>
                     <span id="v-sweat">50%</span>
@@ -202,7 +202,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>G. AGE</span>
+                        <span>AGE</span>
                         <button class="info-btn" onclick="toggleInfo('i-age', this)">i</button>
                     </div>
                     <span id="v-age">50 YRS</span>
@@ -214,7 +214,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>H. BODY FAT %</span>
+                        <span>BODY FAT %</span>
                         <button class="info-btn" onclick="toggleInfo('i-fat', this)">i</button>
                     </div>
                     <span id="v-fat">50%</span>
@@ -226,7 +226,7 @@
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>I. DISEASES (Severity)</span>
+                        <span>DISEASES (Severity)</span>
                         <button class="info-btn" onclick="toggleInfo('i-disease', this)">i</button>
                     </div>
                     <span id="v-disease">50%</span>
@@ -242,7 +242,6 @@
         function toggleInfo(id, btnElement) {
             const infoDiv = document.getElementById(id);
             
-            // Cerrar otros tooltips si quieres que solo haya uno abierto a la vez (Opcional, pero limpio)
             document.querySelectorAll('.info-text').forEach(el => {
                 if (el.id !== id && el.classList.contains('show')) {
                     el.classList.remove('show');
@@ -306,27 +305,43 @@
 
         const particles = [];
         class ThermoNode {
-            constructor(bx, by, isExtremity) {
+            constructor(bx, by, isExtremity, isAmbient = false) {
                 this.baseX = bx;
                 this.baseY = by;
                 this.x = bx;
                 this.y = by;
                 this.vx = 0;
                 this.vy = 0;
-                this.baseRadius = Math.random() * 80 + 80; 
+                
+                this.isAmbient = isAmbient;
+                // Las moléculas sueltas son más pequeñas
+                this.baseRadius = isAmbient ? Math.random() * 30 + 15 : Math.random() * 80 + 70; 
                 this.isInflammation = Math.random() > 0.85;
                 this.isExtremity = isExtremity; 
                 this.randomPhase = Math.random() * Math.PI * 2;
+                // Para el movimiento orbital de las partículas sueltas
+                this.orbitSpeed = (Math.random() - 0.5) * 0.02;
+                this.orbitDist = Math.random() * 50 + 20;
             }
 
             update(sys) {
                 this.randomPhase += 0.05 * sys.muscle;
-                let targetX = this.baseX + Math.cos(this.randomPhase) * 25 * sys.muscle;
-                let targetY = this.baseY + Math.sin(this.randomPhase) * 25 * sys.muscle;
+                let targetX = this.baseX;
+                let targetY = this.baseY;
+
+                if (this.isAmbient) {
+                    // Movimiento flotante más holgado para las partículas del exterior
+                    targetX += Math.cos(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
+                    targetY += Math.sin(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
+                } else {
+                    // Vibración muscular atada al cuerpo
+                    targetX += Math.cos(this.randomPhase) * 20 * sys.muscle;
+                    targetY += Math.sin(this.randomPhase) * 20 * sys.muscle;
+                }
 
                 if(sys.disease > 0.5 && Math.random() < 0.05) {
-                    targetX += (Math.random() - 0.5) * 120 * sys.disease;
-                    targetY += (Math.random() - 0.5) * 120 * sys.disease;
+                    targetX += (Math.random() - 0.5) * (this.isAmbient ? 200 : 120) * sys.disease;
+                    targetY += (Math.random() - 0.5) * (this.isAmbient ? 200 : 120) * sys.disease;
                 }
 
                 let dx = mouse.x - this.x;
@@ -335,17 +350,22 @@
                 
                 if (dist < 250) {
                     let force = (250 - dist) / 250;
-                    this.vx += mouse.vx * force * 0.15;
-                    this.vy += mouse.vy * force * 0.15;
+                    // Las partículas flotantes reaccionan mucho más al movimiento del cursor
+                    let pushFactor = this.isAmbient ? 0.35 : 0.15;
+                    this.vx += mouse.vx * force * pushFactor;
+                    this.vy += mouse.vy * force * pushFactor;
                 }
 
-                let springForceX = (targetX - this.x) * 0.05;
-                let springForceY = (targetY - this.y) * 0.05;
+                // Las partículas ambientales tienen un resorte más suelto para poder viajar más lejos
+                let springTension = this.isAmbient ? 0.015 : 0.05;
+                let springForceX = (targetX - this.x) * springTension;
+                let springForceY = (targetY - this.y) * springTension;
+                
                 this.vx += springForceX;
                 this.vy += springForceY;
 
-                this.vx *= 0.85;
-                this.vy *= 0.85;
+                this.vx *= 0.88; // Ligeramente menos fricción para un flujo más suave
+                this.vy *= 0.88;
                 this.x += this.vx;
                 this.y += this.vy;
             }
@@ -359,10 +379,13 @@
                 let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
                 let heat = this.isInflammation ? (1 + sys.inflammation) : sys.blood;
 
-                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.35 * heat})`); 
-                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.4 * heat})`);
-                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.35 * heat})`);
-                gradient.addColorStop(0.8, `rgba(0, 0, 255, 0.15)`);
+                // Las moléculas flotantes son ligeramente más tenues
+                let alphaMult = this.isAmbient ? 0.6 : 1;
+
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.35 * heat * alphaMult})`); 
+                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.4 * heat * alphaMult})`);
+                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.35 * heat * alphaMult})`);
+                gradient.addColorStop(0.8, `rgba(0, 0, 255, ${0.15 * alphaMult})`);
                 gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                 ctx.beginPath();
@@ -377,13 +400,47 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2;
 
-            for(let i = 0; i < 60; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*200, cy + (Math.random()-0.5)*350, false));
-            for(let i = 0; i < 20; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*100, cy - 250 + (Math.random()-0.5)*100, true));
-            for(let i = 0; i < 40; i++) {
-                if(i < 10) particles.push(new ThermoNode(cx - 200 + (Math.random()-0.5)*80, cy + (Math.random()-0.5)*150, true)); 
-                else if(i < 20) particles.push(new ThermoNode(cx + 200 + (Math.random()-0.5)*80, cy + (Math.random()-0.5)*150, true)); 
-                else if(i < 30) particles.push(new ThermoNode(cx - 80 + (Math.random()-0.5)*80, cy + 250 + (Math.random()-0.5)*150, true)); 
-                else particles.push(new ThermoNode(cx + 80 + (Math.random()-0.5)*80, cy + 250 + (Math.random()-0.5)*150, true)); 
+            // --- SILUETA ORGÁNICA ASIMÉTRICA ---
+            
+            // Torso (Más ancho arriba, un poco irregular)
+            for(let i = 0; i < 70; i++) {
+                let rx = (Math.random() - 0.5) * 220 + (Math.random() * 30); // Ligero sesgo a la derecha
+                let ry = (Math.random() - 0.5) * 350;
+                particles.push(new ThermoNode(cx + rx, cy + ry, false));
+            }
+            
+            // Cabeza (Un poco inclinada)
+            for(let i = 0; i < 20; i++) {
+                particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 260 + (Math.random()-0.5)*100, true));
+            }
+            
+            // Brazo Izquierdo (Más pegado al cuerpo)
+            for(let i = 0; i < 18; i++) {
+                particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*70, cy - 40 + (Math.random()-0.5)*200, true)); 
+            }
+            // Brazo Derecho (Más despegado y extendido)
+            for(let i = 0; i < 18; i++) {
+                particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*80, cy + 20 + (Math.random()-0.5)*180, true)); 
+            }
+            
+            // Pierna Izquierda
+            for(let i = 0; i < 25; i++) {
+                particles.push(new ThermoNode(cx - 90 + (Math.random()-0.5)*90, cy + 280 + (Math.random()-0.5)*220, true)); 
+            }
+            // Pierna Derecha (Postura ligeramente asimétrica)
+            for(let i = 0; i < 25; i++) {
+                particles.push(new ThermoNode(cx + 100 + (Math.random()-0.5)*80, cy + 300 + (Math.random()-0.5)*200, true)); 
+            }
+
+            // --- MOLÉCULAS DISPERSAS (AMBIENTE) ---
+            for(let i = 0; i < 50; i++) {
+                // Radio orbital aleatorio para esparcirlas por la pantalla
+                let angle = Math.random() * Math.PI * 2;
+                let distance = 350 + Math.random() * 450; 
+                let px = cx + Math.cos(angle) * distance;
+                let py = cy + Math.sin(angle) * distance;
+                
+                particles.push(new ThermoNode(px, py, false, true));
             }
         }
 
