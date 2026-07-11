@@ -36,7 +36,6 @@
             filter: blur(15px) contrast(2.5);
         }
 
-        /* Panel con padding uniforme en todos sus lados */
         .panel {
             position: absolute;
             top: 50%;
@@ -45,7 +44,7 @@
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
-            padding: 24px; /* Padding exacto y simétrico */
+            padding: 24px; 
             z-index: 10;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
@@ -55,20 +54,21 @@
             width: 250px; 
             max-height: 85vh; 
             overflow-y: auto;
+            overflow-x: hidden;
             display: flex; flex-direction: column; 
         }
 
+        /* Scrollbar estilizado */
         .control-panel::-webkit-scrollbar { width: 4px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
         .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
+        /* Eliminado el 'background' y el 'sticky' para evitar bloques de color superpuestos */
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); 
             padding-bottom: 15px; 
-            margin-bottom: 15px; /* Separación con el primer slider */
-            position: sticky; top: 0; 
-            z-index: 2; background: var(--panel-bg);
+            margin-bottom: 15px; 
         }
         
         .header h1 { font-size: 0.9rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
@@ -279,14 +279,13 @@
         
         window.addEventListener('resize', resize);
         
-        // ¡MEGA ZOOM INICIAL! Empezamos en 4.5x para ver sólo abstracto al abrir la webapp
         let currentZoom = 4.5; 
         
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
-                currentZoom += e.deltaY * -0.002;
-                // Amplié el límite a 6 por si el usuario quiere hacer aún más zoom hacia adentro
+                // Aumenté el factor multiplicador (de 0.002 a 0.006) para un zoom mucho más rápido y responsivo
+                currentZoom += e.deltaY * -0.006;
                 currentZoom = Math.max(0.5, Math.min(currentZoom, 6));
             }
         }, { passive: false });
@@ -319,7 +318,7 @@
                 this.vy = 0;
                 
                 this.isAmbient = isAmbient;
-                this.baseRadius = isAmbient ? Math.random() * 30 + 15 : Math.random() * 80 + 70; 
+                this.baseRadius = isAmbient ? Math.random() * 35 + 20 : Math.random() * 90 + 75; 
                 this.isInflammation = Math.random() > 0.85;
                 this.isExtremity = isExtremity; 
                 this.randomPhase = Math.random() * Math.PI * 2;
@@ -333,8 +332,8 @@
                 let targetY = this.baseY;
 
                 if (this.isAmbient) {
-                    targetX += Math.cos(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
-                    targetY += Math.sin(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
+                    targetX += Math.cos(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2.5;
+                    targetY += Math.sin(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2.5;
                 } else {
                     targetX += Math.cos(this.randomPhase) * 20 * sys.muscle;
                     targetY += Math.sin(this.randomPhase) * 20 * sys.muscle;
@@ -378,12 +377,13 @@
                 let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
                 let heat = this.isInflammation ? (1 + sys.inflammation) : sys.blood;
 
-                let alphaMult = this.isAmbient ? 0.6 : 1;
+                let alphaMult = this.isAmbient ? 0.7 : 1.1; // Aumento de opacidad general para mayor vitalidad
 
-                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.35 * heat * alphaMult})`); 
-                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.4 * heat * alphaMult})`);
-                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.35 * heat * alphaMult})`);
-                gradient.addColorStop(0.8, `rgba(0, 0, 255, ${0.15 * alphaMult})`);
+                // Gradientes ajustados para colores más vibrantes y compactos
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.45 * heat * alphaMult})`); 
+                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.55 * heat * alphaMult})`);
+                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.45 * heat * alphaMult})`);
+                gradient.addColorStop(0.8, `rgba(0, 0, 255, ${0.25 * alphaMult})`);
                 gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                 ctx.beginPath();
@@ -398,40 +398,40 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2;
 
-            // Torso
-            for(let i = 0; i < 70; i++) {
-                let rx = (Math.random() - 0.5) * 220 + (Math.random() * 30); 
-                let ry = (Math.random() - 0.5) * 350;
+            // CUERPO MÁS DENSO Y DETALLADO
+            // Torso (de 70 a 120 partículas para rellenar huecos)
+            for(let i = 0; i < 120; i++) {
+                let rx = (Math.random() - 0.5) * 230 + (Math.random() * 30); 
+                let ry = (Math.random() - 0.5) * 360;
                 particles.push(new ThermoNode(cx + rx, cy + ry, false));
             }
             
             // Cabeza
-            for(let i = 0; i < 20; i++) {
-                particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 260 + (Math.random()-0.5)*100, true));
+            for(let i = 0; i < 35; i++) {
+                particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 270 + (Math.random()-0.5)*110, true));
             }
             
-            // Brazo Izquierdo
-            for(let i = 0; i < 18; i++) {
-                particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*70, cy - 40 + (Math.random()-0.5)*200, true)); 
+            // Brazos
+            for(let i = 0; i < 30; i++) {
+                particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*75, cy - 40 + (Math.random()-0.5)*210, true)); 
             }
-            // Brazo Derecho
-            for(let i = 0; i < 18; i++) {
-                particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*80, cy + 20 + (Math.random()-0.5)*180, true)); 
+            for(let i = 0; i < 30; i++) {
+                particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*85, cy + 20 + (Math.random()-0.5)*190, true)); 
             }
             
-            // Pierna Izquierda
-            for(let i = 0; i < 25; i++) {
-                particles.push(new ThermoNode(cx - 90 + (Math.random()-0.5)*90, cy + 280 + (Math.random()-0.5)*220, true)); 
+            // Piernas
+            for(let i = 0; i < 40; i++) {
+                particles.push(new ThermoNode(cx - 95 + (Math.random()-0.5)*95, cy + 280 + (Math.random()-0.5)*230, true)); 
             }
-            // Pierna Derecha
-            for(let i = 0; i < 25; i++) {
-                particles.push(new ThermoNode(cx + 100 + (Math.random()-0.5)*80, cy + 300 + (Math.random()-0.5)*200, true)); 
+            for(let i = 0; i < 40; i++) {
+                particles.push(new ThermoNode(cx + 105 + (Math.random()-0.5)*85, cy + 300 + (Math.random()-0.5)*210, true)); 
             }
 
-            // Moléculas flotantes
-            for(let i = 0; i < 50; i++) {
+            // AMBIENTE (De 50 a 150 partículas para rellenar los vacíos oscuros del fondo)
+            for(let i = 0; i < 150; i++) {
                 let angle = Math.random() * Math.PI * 2;
-                let distance = 350 + Math.random() * 450; 
+                // Ampliando el rango de dispersión
+                let distance = 350 + Math.random() * 650; 
                 let px = cx + Math.cos(angle) * distance;
                 let py = cy + Math.sin(angle) * distance;
                 
