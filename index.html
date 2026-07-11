@@ -3,161 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio Engine V12 - Heatmap Analyzer</title>
+    <title>Thermography Studio</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&display=swap');
 
         :root {
-            --bg-color: #0b0f19;
-            --panel-bg: #0d111a;
+            --bg-color: #030712;
+            --panel-bg: rgba(13, 17, 26, 0.85);
             --text-main: #e2e8f0;
             --text-muted: #64748b;
-            --accent-blue: #4f6bff;
-            --accent-green: #2ee59d;
-            --border-color: #1e293b;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+            --border-color: rgba(30, 41, 59, 0.7);
             --font-mono: 'Space Mono', monospace;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
+        body, html {
+            margin: 0; padding: 0;
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: var(--font-mono);
-            display: flex;
-            height: 100vh;
+            width: 100vw; height: 100vh;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Sidebar Control Panel */
-        .control-panel {
-            width: 400px;
+        #thermo-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+            /* Filtros para fusionar las partículas y crear el look de cámara térmica */
+            filter: blur(18px) contrast(3.5);
+            transition: filter 0.2s ease-out;
+        }
+
+        .panel {
+            position: absolute;
             background-color: var(--panel-bg);
-            border-right: 1px solid var(--border-color);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
             z-index: 10;
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+
+        .control-panel {
+            top: 30px; left: 30px;
+            width: 380px;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .info-panel {
+            top: 30px; right: 30px;
+            width: 320px;
+            font-size: 0.75rem; line-height: 1.6;
+            color: var(--text-muted);
         }
 
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
-        .header h1 { font-size: 1.2rem; margin: 0; }
-        .status { color: var(--accent-green); font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
-        .status::before { content: ''; width: 8px; height: 8px; background-color: var(--accent-green); border-radius: 50%; }
+        .header h1 { font-size: 1.1rem; margin: 0; letter-spacing: 1px; color: #fff;}
+        .status { color: var(--accent-red); font-size: 0.75rem; display: flex; align-items: center; gap: 5px; animation: pulse 2s infinite; }
+        .status::before { content: ''; width: 8px; height: 8px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 8px var(--accent-red); }
 
-        /* Sliders */
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
         .slider-group { display: flex; flex-direction: column; gap: 15px; }
         .slider-row { display: flex; flex-direction: column; gap: 5px; }
-        .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; }
+        .slider-header { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; }
+        
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 15px; width: 8px; background: #fff; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: var(--accent-blue); }
+        
+        /* Modificadores visuales para los tracks de los sliders */
+        #slide-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); }
+        #slide-sweat::-webkit-slider-runnable-track { background: #3b82f6; }
+        #slide-humidity::-webkit-slider-runnable-track { background: #94a3b8; }
+        #slide-activity::-webkit-slider-runnable-track { background: #ef4444; }
 
-        /* Visualization Area (Right side) */
-        .visualization-area {
-            flex: 1;
-            background-color: #050505;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Simulador de Video/Mapa de Calor */
-        .heat-layer {
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(circle at center, #ffffff 0%, #ffeb3b 20%, #f44336 40%, #9c27b0 60%, #0000ff 80%, #000 100%);
-            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; /* Forma orgánica simluando un cuerpo */
-            transition: all 0.1s ease-out;
-            filter: hue-rotate(0deg) blur(18px) contrast(1.5);
-            animation: breathe 4s infinite alternate ease-in-out;
-        }
-
-        @keyframes breathe {
-            0% { transform: scale(1) rotate(0deg); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-            100% { transform: scale(1.05) rotate(5deg); border-radius: 50% 50% 30% 70% / 60% 40% 60% 40%; }
-        }
-
-        /* UI Overlays on video */
-        .overlay-data {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            font-size: 2rem;
-            color: rgba(255,255,255,0.7);
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
-        }
-
+        .info-panel h3 { color: var(--text-main); font-size: 0.85rem; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;}
+        .info-panel strong { color: #fff; }
     </style>
 </head>
 <body>
 
-    <div class="control-panel">
+    <canvas id="thermo-canvas"></canvas>
+
+    <div class="panel control-panel">
         <div class="header">
-            <h1>STUDIO ENGINE V12</h1>
-            <div class="status">GLOBAL GRAVITY</div>
+            <h1>THERMOGRAPHY STUDIO</h1>
+            <div class="status">IR SCAN ACTIVE</div>
         </div>
 
         <div class="slider-group">
             <div class="slider-row">
                 <div class="slider-header">
-                    <span>CALIBRATE TEMP (Color)</span>
-                    <span id="val-temp">0°</span>
+                    <span>AMBIENT TEMPERATURE</span>
+                    <span id="val-ambient">25°C</span>
                 </div>
-                <input type="range" id="slide-temp" min="-180" max="180" value="0">
+                <input type="range" id="slide-ambient" min="0" max="45" value="25">
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <span>HUMIDITY</span>
+                    <span id="val-humidity">40%</span>
+                </div>
+                <input type="range" id="slide-humidity" min="0" max="100" value="40">
             </div>
             
             <div class="slider-row">
                 <div class="slider-header">
-                    <span>STORM DENSITY (Blur)</span>
-                    <span id="val-density">18 PX</span>
+                    <span>SWEATING (Evaporative Cooling)</span>
+                    <span id="val-sweat">10%</span>
                 </div>
-                <input type="range" id="slide-density" min="0" max="50" value="18">
+                <input type="range" id="slide-sweat" min="0" max="100" value="10">
             </div>
 
             <div class="slider-row">
                 <div class="slider-header">
-                    <span>TURBULENCE CHAOS (Contrast)</span>
-                    <span id="val-chaos">1.5X</span>
+                    <span>MUSCLE ACTIVITY (Blood Flow)</span>
+                    <span id="val-activity">20%</span>
                 </div>
-                <input type="range" id="slide-chaos" min="5" max="30" value="15">
+                <input type="range" id="slide-activity" min="0" max="100" value="20">
             </div>
         </div>
     </div>
 
-    <div class="visualization-area">
-        <div class="heat-layer" id="heat-render"></div>
-        <div class="overlay-data" id="speed-overlay">VELOCIDAD: 10.50 KM/H</div>
+    <div class="panel info-panel">
+        <h3>THERMODYNAMIC ANALYSIS</h3>
+        <p>This engine simulates infrared radiation detection based on physiological parameters.</p>
+        <p><strong>Note:</strong> IR cameras measure surface skin temperature, not internal organs. Colors range from Blue (Cold) to Red/White (Hot).</p>
+        <br>
+        <ul style="padding-left: 15px; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+            <li><strong>Sweat:</strong> Absorbs energy upon evaporation, lowering skin temperature.</li>
+            <li><strong>Humidity:</strong> High humidity prevents sweat evaporation, nullifying the cooling effect.</li>
+            <li><strong>Muscle Activity:</strong> Increases ATP consumption and blood flow, generating local heat spikes.</li>
+        </ul>
     </div>
 
     <script>
-        const tempSlider = document.getElementById('slide-temp');
-        const densitySlider = document.getElementById('slide-density');
-        const chaosSlider = document.getElementById('slide-chaos');
-        const heatRender = document.getElementById('heat-render');
+        const canvas = document.getElementById('thermo-canvas');
+        const ctx = canvas.getContext('2d');
 
-        function updateVisuals() {
-            const hue = tempSlider.value;
-            const blur = densitySlider.value;
-            const contrast = chaosSlider.value / 10;
+        // Referencias a la UI
+        const sAmbient = document.getElementById('slide-ambient');
+        const sHumidity = document.getElementById('slide-humidity');
+        const sSweat = document.getElementById('slide-sweat');
+        const sActivity = document.getElementById('slide-activity');
 
-            // Actualizar textos
-            document.getElementById('val-temp').textContent = hue + '°';
-            document.getElementById('val-density').textContent = blur + ' PX';
-            document.getElementById('val-chaos').textContent = contrast + 'X';
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-            // Inyectar CSS dinámico a la capa visual
-            heatRender.style.filter = `hue-rotate(${hue}deg) blur(${blur}px) contrast(${contrast})`;
+        // Interacción del cursor (Simula un foco de atención/flujo)
+        let mouse = { x: canvas.width/2, y: canvas.height/2 };
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        });
+
+        // Motor de partículas termográficas
+        const particles = [];
+        const numParticles = 120; // Más partículas para mayor densidad
+
+        class ThermoNode {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.baseVx = (Math.random() - 0.5) * 1.5;
+                this.baseVy = (Math.random() - 0.5) * 1.5;
+                this.radius = Math.random() * 60 + 40;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update(activityLevel) {
+                // La actividad muscular aumenta la velocidad de las partículas (simula flujo sanguíneo rápido)
+                let speedMult = 1 + (activityLevel / 100) * 3;
+                
+                this.x += this.baseVx * speedMult;
+                this.y += this.baseVy * speedMult;
+
+                // Atracción suave al centro de masa (mouse) para mantener los nodos agrupados
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                this.x += dx * 0.005;
+                this.y += dy * 0.005;
+
+                // Rebotar suavemente
+                if (this.x < 0 || this.x > canvas.width) this.baseVx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.baseVy *= -1;
+            }
+
+            draw() {
+                // Paleta Base (Infrarrojo): Blanco/Amarillo centro -> Rojo medio -> Azul borde -> Transparente
+                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');   // Peak Hot
+                gradient.addColorStop(0.2, 'rgba(255, 255, 0, 0.8)'); // Hot
+                gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.6)');   // Mid
+                gradient.addColorStop(0.8, 'rgba(0, 0, 255, 0.3)');   // Cool
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');         // Cold/Background
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
         }
 
-        // Escuchar eventos
-        tempSlider.addEventListener('input', updateVisuals);
-        densitySlider.addEventListener('input', updateVisuals);
-        chaosSlider.addEventListener('input', updateVisuals);
+        for (let i = 0; i < numParticles; i++) {
+            particles.push(new ThermoNode());
+        }
+
+        function calculateThermodynamics() {
+            let ambient = parseFloat(sAmbient.value);
+            let humidity = parseFloat(sHumidity.value);
+            let sweat = parseFloat(sSweat.value);
+            let activity = parseFloat(sActivity.value);
+
+            // Actualizar textos en UI
+            document.getElementById('val-ambient').textContent = ambient + '°C';
+            document.getElementById('val-humidity').textContent = humidity + '%';
+            document.getElementById('val-sweat').textContent = sweat + '%';
+            document.getElementById('val-activity').textContent = activity + '%';
+
+            // FÓRMULA TERMODINÁMICA SIMULADA
+            // 1. El enfriamiento por sudor depende de la humedad (100% humedad = 0 evaporación = 0 enfriamiento)
+            let evaporativeEfficiency = 1 - (humidity / 100);
+            let coolingEffect = sweat * evaporativeEfficiency;
+
+            // 2. Temperatura base (25°C es neutral).
+            let ambientEffect = (ambient - 25) * 2; // Rango de -50 a +40
+
+            // 3. Actividad calienta
+            let heatingEffect = activity * 0.8;
+
+            // 4. Calcular el desplazamiento de color (Hue Rotate)
+            // Valores negativos calientan la imagen hacia el rojo/blanco. Valores positivos la enfrían hacia el azul/púrpura.
+            let hueShift = (coolingEffect * 1.5) - ambientEffect - heatingEffect;
+            
+            // Limitar el hueShift para que no de la vuelta completa a colores irreales
+            hueShift = Math.max(-60, Math.min(hueShift, 180));
+
+            // Aplicar al canvas
+            // El filtro CSS manipula el gradiente renderizado en tiempo real
+            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(18px) contrast(3.5)`;
+
+            return activity;
+        }
+
+        function animate() {
+            // Fondo negro absorbe la luz (espacio frío)
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 'screen' hace que los focos térmicos se sumen y creen luz blanca en el centro
+            ctx.globalCompositeOperation = 'screen';
+
+            let currentActivityLevel = calculateThermodynamics();
+
+            particles.forEach(p => {
+                p.update(currentActivityLevel);
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
     </script>
 </body>
 </html>
