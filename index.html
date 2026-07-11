@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,6 @@
             --text-muted: #64748b;
             --accent-red: #ef4444;
             --accent-blue: #3b82f6;
-            --accent-green: #10b981;
             --border-color: rgba(30, 41, 59, 0.7);
             --font-mono: 'Space Mono', monospace;
         }
@@ -29,21 +28,22 @@
             position: relative;
         }
 
-        /* Contenedor para el Zoom */
+        /* Container for the Zoom In/Out feature */
         #canvas-container {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            /* Transición suave para el efecto del scroll/trackpad */
-            transition: transform 0.1s ease-out;
+            transition: transform 0.15s ease-out;
             transform-origin: center center;
+            background-color: #000;
         }
 
         #thermo-canvas {
             width: 100%; height: 100%;
-            /* Fusión metaball: desenfoque alto + contraste extremo */
-            filter: blur(25px) contrast(6);
+            /* Ajustado para no quemar la imagen: blur moderado y contraste controlado */
+            filter: blur(15px) contrast(2.5);
+            transition: filter 0.2s ease-out;
         }
 
         .panel {
@@ -60,12 +60,11 @@
         .control-panel {
             top: 20px; left: 20px;
             width: 320px; 
-            max-height: 90vh; /* Permite scroll si la pantalla es pequeña */
+            max-height: 90vh; 
             overflow-y: auto;
             display: flex; flex-direction: column; gap: 20px;
         }
 
-        /* Estilizar la barra de scroll del panel */
         .control-panel::-webkit-scrollbar { width: 6px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
         .control-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
@@ -90,7 +89,7 @@
         .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
 
         .info-text {
-            display: none; font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.3);
+            display: none; font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.4);
             padding: 8px 10px; border-left: 2px solid var(--accent-blue); line-height: 1.4; margin-top: 2px; border-radius: 0 2px 2px 0;
         }
         .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
@@ -101,7 +100,6 @@
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 15px; width: 8px; background: #fff; cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: var(--border-color); }
         
-        /* Colores dinámicos para los sliders según la temática */
         #s-speed::-webkit-slider-runnable-track { background: linear-gradient(90deg, #64748b, #fff); }
         #s-blood::-webkit-slider-runnable-track { background: var(--accent-red); }
         #s-muscle::-webkit-slider-runnable-track { background: #f59e0b; }
@@ -149,7 +147,7 @@
                     <span id="v-blood">50%</span>
                 </div>
                 <input type="range" id="s-blood" min="0" max="100" value="50">
-                <div class="info-text" id="i-blood">Factor dominante. Más sangre incrementa dramáticamente la temperatura superficial local (rojo/blanco).</div>
+                <div class="info-text" id="i-blood">Dominant factor. More blood flow dramatically increases local surface temperature (red/white areas).</div>
             </div>
 
             <div class="slider-row">
@@ -161,7 +159,7 @@
                     <span id="v-muscle">20%</span>
                 </div>
                 <input type="range" id="s-muscle" min="0" max="100" value="20">
-                <div class="info-text" id="i-muscle">Aumenta el metabolismo local. Expande las áreas calientes y genera movimiento constante.</div>
+                <div class="info-text" id="i-muscle">Increases local metabolism. Expands hot zones and generates constant kinetic movement.</div>
             </div>
 
             <div class="slider-row">
@@ -173,7 +171,7 @@
                     <span id="v-inflammation">0%</span>
                 </div>
                 <input type="range" id="s-inflammation" min="0" max="100" value="0">
-                <div class="info-text" id="i-inflammation">Simula focos de calor anormales debido a procesos inflamatorios aislados.</div>
+                <div class="info-text" id="i-inflammation">Simulates abnormal localized heat pockets caused by inflammatory processes.</div>
             </div>
 
             <div class="slider-row">
@@ -185,7 +183,7 @@
                     <span id="v-ambient">25°C</span>
                 </div>
                 <input type="range" id="s-ambient" min="0" max="45" value="25">
-                <div class="info-text" id="i-ambient">Base térmica del ambiente. Desplaza todo el espectro de color.</div>
+                <div class="info-text" id="i-ambient">The base thermal environment. It shifts the entire color spectrum of the scan.</div>
             </div>
 
             <div class="slider-row">
@@ -197,7 +195,7 @@
                     <span id="v-humidity">40%</span>
                 </div>
                 <input type="range" id="s-humidity" min="0" max="100" value="40">
-                <div class="info-text" id="i-humidity">Afecta la capacidad del cuerpo para enfriarse mediante la evaporación.</div>
+                <div class="info-text" id="i-humidity">Affects the body's ability to cool down. High humidity prevents sweat evaporation.</div>
             </div>
 
             <div class="slider-row">
@@ -209,7 +207,7 @@
                     <span id="v-sweat">10%</span>
                 </div>
                 <input type="range" id="s-sweat" min="0" max="100" value="10">
-                <div class="info-text" id="i-sweat">Enfriamiento por evaporación. Resta energía a la superficie, moviendo el mapa a tonos fríos.</div>
+                <div class="info-text" id="i-sweat">Evaporative cooling mechanism. Removes energy from the surface, shifting the map to colder (blue) tones.</div>
             </div>
 
             <div class="slider-row">
@@ -221,7 +219,7 @@
                     <span id="v-age">30 YRS</span>
                 </div>
                 <input type="range" id="s-age" min="18" max="90" value="30">
-                <div class="info-text" id="i-age">Con la edad, la circulación periférica disminuye, enfriando extremidades y reduciendo focos activos.</div>
+                <div class="info-text" id="i-age">As age increases, peripheral circulation decreases, cooling down extremities and reducing active hotspots.</div>
             </div>
 
             <div class="slider-row">
@@ -233,7 +231,7 @@
                     <span id="v-fat">15%</span>
                 </div>
                 <input type="range" id="s-fat" min="5" max="40" value="15">
-                <div class="info-text" id="i-fat">La grasa actúa como aislante térmico. Mayor grasa suaviza la imagen y reduce la temperatura superficial.</div>
+                <div class="info-text" id="i-fat">Adipose tissue acts as a thermal insulator. Higher fat percentage softens the image and lowers surface heat.</div>
             </div>
 
             <div class="slider-row">
@@ -245,21 +243,19 @@
                     <span id="v-disease">0%</span>
                 </div>
                 <input type="range" id="s-disease" min="0" max="100" value="0">
-                <div class="info-text" id="i-disease">Altera el patrón térmico creando anomalías caóticas e impredecibles en el flujo.</div>
+                <div class="info-text" id="i-disease">Alters the thermal pattern, creating chaotic and unpredictable anomalies in the thermodynamic flow.</div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // --- Lógica de la UI ---
+        // --- UI Logic ---
         function toggleInfo(id, btnElement) {
             const infoDiv = document.getElementById(id);
             infoDiv.classList.toggle('show');
             btnElement.classList.toggle('active');
         }
 
-        // Referencias de sliders
         const sliders = {
             speed: document.getElementById('s-speed'),
             blood: document.getElementById('s-blood'),
@@ -273,7 +269,7 @@
             disease: document.getElementById('s-disease')
         };
 
-        // --- Motor Termográfico ---
+        // --- Engine ---
         const canvas = document.getElementById('thermo-canvas');
         const container = document.getElementById('canvas-container');
         const ctx = canvas.getContext('2d');
@@ -285,30 +281,27 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // 4. Zoom con Trackpad / Mouse Wheel
+        // Zoom Logic (Trackpad / Mouse Wheel)
         let currentZoom = 1;
         window.addEventListener('wheel', (e) => {
-            // Evita el scroll por defecto si estamos fuera del panel de control
             if(!e.target.closest('.control-panel')) {
                 e.preventDefault();
-                // Sensibilidad del zoom
                 currentZoom += e.deltaY * -0.002;
-                currentZoom = Math.max(0.5, Math.min(currentZoom, 4)); // Limites de zoom
+                currentZoom = Math.max(0.5, Math.min(currentZoom, 4)); // Limites de zoom (0.5x a 4x)
                 container.style.transform = `scale(${currentZoom})`;
             }
         }, { passive: false });
 
-        // 3. Interacción fluida del cursor (Efecto Dedo)
+        // Finger Drag Logic
         let mouse = { x: canvas.width/2, y: canvas.height/2, vx: 0, vy: 0 };
         let lastMouse = { x: mouse.x, y: mouse.y };
 
         window.addEventListener('mousemove', (e) => {
-            // Ajustar coordenadas según el nivel de zoom actual
             const rect = canvas.getBoundingClientRect();
+            // Adjusting for zoom
             mouse.x = (e.clientX - rect.left) / currentZoom;
             mouse.y = (e.clientY - rect.top) / currentZoom;
             
-            // Calcular velocidad del ratón para arrastrar el fluido
             mouse.vx = mouse.x - lastMouse.x;
             mouse.vy = mouse.y - lastMouse.y;
             
@@ -316,9 +309,8 @@
             lastMouse.y = mouse.y;
         });
 
-        // Partículas masivas para el efecto Metaball
         const particles = [];
-        const numParticles = 60; // Menos partículas pero mucho más grandes
+        const numParticles = 80; 
 
         class HeatBlob {
             constructor() {
@@ -326,14 +318,12 @@
                 this.y = Math.random() * canvas.height;
                 this.vx = (Math.random() - 0.5) * 2;
                 this.vy = (Math.random() - 0.5) * 2;
-                // Masas muy grandes para lograr el look continuo de tus imágenes
-                this.baseRadius = Math.random() * 150 + 100; 
+                this.baseRadius = Math.random() * 120 + 80; 
                 this.angle = Math.random() * Math.PI * 2;
                 this.isInflammation = Math.random() > 0.8;
             }
 
             update(sys) {
-                // Movimiento autónomo orgánico (Respiración)
                 this.angle += 0.02 * sys.speed;
                 let wobbleX = Math.cos(this.angle) * sys.muscle;
                 let wobbleY = Math.sin(this.angle) * sys.muscle;
@@ -341,46 +331,40 @@
                 this.x += (this.vx * sys.blood * sys.speed) + wobbleX;
                 this.y += (this.vy * sys.blood * sys.speed) + wobbleY;
 
-                // Interacción con el cursor: Arrastre de fluido
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 
-                if (dist < 300) {
-                    let force = (300 - dist) / 300;
-                    // El cursor "arrastra" la partícula en la dirección en que se mueve el ratón
-                    this.x += mouse.vx * force * 0.5;
-                    this.y += mouse.vy * force * 0.5;
+                // Efecto "Dedo": Arrastra las partículas suavemente
+                if (dist < 250) {
+                    let force = (250 - dist) / 250;
+                    this.x += mouse.vx * force * 0.8;
+                    this.y += mouse.vy * force * 0.8;
                 }
 
-                // Caos por enfermedad
                 if (sys.disease > 0 && Math.random() < 0.05) {
-                    this.x += (Math.random() - 0.5) * sys.disease * 5;
-                    this.y += (Math.random() - 0.5) * sys.disease * 5;
+                    this.x += (Math.random() - 0.5) * sys.disease * 8;
+                    this.y += (Math.random() - 0.5) * sys.disease * 8;
                 }
 
-                // Rebote en bordes suaves
-                if (this.x < -200) this.vx *= -1;
-                if (this.x > canvas.width + 200) this.vx *= -1;
-                if (this.y < -200) this.vy *= -1;
-                if (this.y > canvas.height + 200) this.vy *= -1;
+                if (this.x < -100) this.vx *= -1;
+                if (this.x > canvas.width + 100) this.vx *= -1;
+                if (this.y < -100) this.vy *= -1;
+                if (this.y > canvas.height + 100) this.vy *= -1;
             }
 
             draw(sys) {
-                // Radio afectado por la grasa corporal (aislante: difumina y achica focos)
                 let currentRadius = this.baseRadius * (1 - (sys.fat * 0.01));
-
-                // Colores tipo Ironbow termográfico. El CSS se encargará de fusionarlos.
                 let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
                 
-                // Si es un foco de inflamación y el slider de inflamación está alto, quema en rojo/blanco
-                let pHeat = this.isInflammation ? sys.inflammation * 2 : 1;
+                let heat = this.isInflammation ? (1 + sys.inflammation) : 1;
 
-                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.8 * pHeat})`); // Centro caliente
-                gradient.addColorStop(0.3, `rgba(255, 255, 0, 0.7)`);
-                gradient.addColorStop(0.6, `rgba(255, 0, 0, 0.5)`);
-                gradient.addColorStop(0.9, `rgba(0, 0, 255, 0.3)`);
-                gradient.addColorStop(1, 'rgba(0, 0, 255, 0)');
+                // FIX: Opacidades mucho más bajas para evitar quemar la pantalla a blanco
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.15 * heat})`); 
+                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.2 * heat})`);
+                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.15 * heat})`);
+                gradient.addColorStop(0.8, `rgba(0, 0, 255, 0.1)`);
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
@@ -394,7 +378,7 @@
         function updateSystem() {
             let sys = {
                 speed: parseFloat(sliders.speed.value),
-                blood: parseFloat(sliders.blood.value) / 50, // 1 es normal
+                blood: parseFloat(sliders.blood.value) / 50, 
                 muscle: parseFloat(sliders.muscle.value) / 20,
                 inflammation: parseFloat(sliders.inflammation.value) / 100,
                 ambient: parseFloat(sliders.ambient.value),
@@ -405,7 +389,6 @@
                 disease: parseFloat(sliders.disease.value) / 100
             };
 
-            // Actualizar textos UI
             let speedText = sys.speed === 1 ? "NORMAL" : (sys.speed < 1 ? "LOW" : "FAST");
             document.getElementById('v-speed').textContent = sys.speed + "x (" + speedText + ")";
             document.getElementById('v-blood').textContent = sliders.blood.value + '%';
@@ -418,36 +401,34 @@
             document.getElementById('v-fat').textContent = sys.fat + '%';
             document.getElementById('v-disease').textContent = sliders.disease.value + '%';
 
-            // Matemáticas Termodinámicas Globales para el Cambio de Color (Hue)
-            let evaporativeCooling = sys.sweat * (1 - (sys.humidity / 100)); // Humedad anula sudor
+            let evaporativeCooling = sys.sweat * (1 - (sys.humidity / 100)); 
             let ambientEffect = (sys.ambient - 25) * 2;
-            let ageCooling = (sys.age - 30) * 0.5; // Mayor edad enfría superficie
+            let ageCooling = (sys.age - 30) * 0.5; 
             let bloodHeating = (sliders.blood.value - 50);
 
-            // Desplazamiento del tono en CSS
+            // FIX: Limitar el cambio de color para mantener tonos térmicos realistas
             let hueShift = (evaporativeCooling * 1.5) + ageCooling - ambientEffect - bloodHeating;
-            hueShift = Math.max(-80, Math.min(hueShift, 200));
+            hueShift = Math.max(-40, Math.min(hueShift, 100));
 
-            // Aplicar el filtro metaball al contenedor del canvas
-            // El contraste alto asegura bordes duros entre colores simulando el umbral de las cámaras térmicas
-            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(25px) contrast(6)`;
+            // Aplicamos los filtros CSS de manera controlada al canvas
+            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(15px) contrast(2.5)`;
 
             return sys;
         }
 
         function animate() {
-            // Fondo azul profundo (Espacio frío base de la termografía)
-            ctx.fillStyle = '#0a1045'; 
+            // Fondo oscuro (negro puro o azul muy profundo) para que el modo "lighter" destaque los colores
+            ctx.fillStyle = '#010205'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Mezcla para que la luz de las partículas se sume
-            ctx.globalCompositeOperation = 'screen';
+            // "lighter" suma los colores de forma aditiva pero más suave que "screen"
+            ctx.globalCompositeOperation = 'lighter';
 
             let sys = updateSystem();
 
-            // Decaer la velocidad del mouse para que el "dedo" no arrastre por siempre si el ratón se detiene
-            mouse.vx *= 0.9;
-            mouse.vy *= 0.9;
+            // Decaimiento del movimiento del mouse para que no arrastre por siempre
+            mouse.vx *= 0.85;
+            mouse.vy *= 0.85;
 
             particles.forEach(p => {
                 p.update(sys);
