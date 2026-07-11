@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thermography Studio</title>
+    <title>Thermography Studio Pro</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&display=swap');
 
         :root {
-            --bg-color: #030712;
+            --bg-color: #010409;
             --panel-bg: rgba(13, 17, 26, 0.85);
             --text-main: #e2e8f0;
             --text-muted: #64748b;
             --accent-red: #ef4444;
             --accent-blue: #3b82f6;
+            --accent-green: #10b981;
             --border-color: rgba(30, 41, 59, 0.7);
             --font-mono: 'Space Mono', monospace;
         }
@@ -28,13 +29,21 @@
             position: relative;
         }
 
-        #thermo-canvas {
+        /* Contenedor para el Zoom */
+        #canvas-container {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 1;
-            filter: blur(18px) contrast(3.5);
-            transition: filter 0.2s ease-out;
+            display: flex; align-items: center; justify-content: center;
+            /* Transición suave para el efecto del scroll/trackpad */
+            transition: transform 0.1s ease-out;
+            transform-origin: center center;
+        }
+
+        #thermo-canvas {
+            width: 100%; height: 100%;
+            /* Fusión metaball: desenfoque alto + contraste extremo */
+            filter: blur(25px) contrast(6);
         }
 
         .panel {
@@ -48,135 +57,197 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
 
-        /* 1. Panel más angosto */
         .control-panel {
-            top: 30px; left: 30px;
-            width: 300px; 
+            top: 20px; left: 20px;
+            width: 320px; 
+            max-height: 90vh; /* Permite scroll si la pantalla es pequeña */
+            overflow-y: auto;
             display: flex; flex-direction: column; gap: 20px;
         }
 
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        /* Estilizar la barra de scroll del panel */
+        .control-panel::-webkit-scrollbar { width: 6px; }
+        .control-panel::-webkit-scrollbar-track { background: transparent; }
+        .control-panel::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; position: sticky; top: -20px; background: var(--panel-bg); z-index: 2; margin-top: -20px; padding-top: 20px;}
         .header h1 { font-size: 1.1rem; margin: 0; letter-spacing: 1px; color: #fff;}
         .status { color: var(--accent-red); font-size: 0.75rem; display: flex; align-items: center; gap: 5px; animation: pulse 2s infinite; }
         .status::before { content: ''; width: 8px; height: 8px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 8px var(--accent-red); }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .slider-group { display: flex; flex-direction: column; gap: 20px; }
+        .slider-group { display: flex; flex-direction: column; gap: 18px; }
         .slider-row { display: flex; flex-direction: column; gap: 8px; }
         .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #cbd5e1; }
         
-        /* 2. Botón de Información */
         .header-left { display: flex; align-items: center; gap: 8px; }
         .info-btn {
-            background: transparent;
-            border: 1px solid var(--text-muted);
-            color: var(--text-muted);
-            border-radius: 50%;
-            width: 16px; height: 16px;
-            font-size: 9px;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-family: var(--font-mono);
-            padding: 0;
-            transition: all 0.2s;
+            background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
+            border-radius: 50%; width: 16px; height: 16px; font-size: 9px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: all 0.2s;
         }
-        .info-btn:hover, .info-btn.active {
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            background: rgba(59, 130, 246, 0.1);
-        }
+        .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
 
-        /* 3. Caja de texto colapsable */
         .info-text {
-            display: none;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            background: rgba(0,0,0,0.3);
-            padding: 8px 10px;
-            border-left: 2px solid var(--accent-blue);
-            line-height: 1.4;
-            margin-top: 2px;
-            border-radius: 0 2px 2px 0;
+            display: none; font-size: 0.7rem; color: var(--text-muted); background: rgba(0,0,0,0.3);
+            padding: 8px 10px; border-left: 2px solid var(--accent-blue); line-height: 1.4; margin-top: 2px; border-radius: 0 2px 2px 0;
         }
-        .info-text.show {
-            display: block;
-            animation: fadeIn 0.2s ease-out;
-        }
+        .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 15px; width: 8px; background: #fff; cursor: pointer; margin-top: -6px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: var(--accent-blue); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: var(--border-color); }
         
-        #slide-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); }
-        #slide-sweat::-webkit-slider-runnable-track { background: #3b82f6; }
-        #slide-humidity::-webkit-slider-runnable-track { background: #94a3b8; }
-        #slide-activity::-webkit-slider-runnable-track { background: #ef4444; }
+        /* Colores dinámicos para los sliders según la temática */
+        #s-speed::-webkit-slider-runnable-track { background: linear-gradient(90deg, #64748b, #fff); }
+        #s-blood::-webkit-slider-runnable-track { background: var(--accent-red); }
+        #s-muscle::-webkit-slider-runnable-track { background: #f59e0b; }
+        #s-inflammation::-webkit-slider-runnable-track { background: #dc2626; }
+        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); }
+        #s-humidity::-webkit-slider-runnable-track { background: #94a3b8; }
+        #s-sweat::-webkit-slider-runnable-track { background: #3b82f6; }
+        #s-age::-webkit-slider-runnable-track { background: #a8a29e; }
+        #s-fat::-webkit-slider-runnable-track { background: #fde047; }
+        #s-disease::-webkit-slider-runnable-track { background: #8b5cf6; }
+
     </style>
 </head>
 <body>
 
-    <canvas id="thermo-canvas"></canvas>
+    <div id="canvas-container">
+        <canvas id="thermo-canvas"></canvas>
+    </div>
 
     <div class="panel control-panel">
         <div class="header">
-            <h1>THERMOGRAPHY STUDIO</h1>
-            <div class="status">IR SCAN ACTIVE</div>
+            <h1>THERMO PRO V2</h1>
+            <div class="status">LIVE FEED</div>
         </div>
 
         <div class="slider-group">
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>AMBIENT TEMP</span>
-                        <button class="info-btn" onclick="toggleInfo('info-ambient', this)">i</button>
+                        <span style="color: #fff; font-weight: bold;">KINETIC SPEED</span>
                     </div>
-                    <span id="val-ambient">25°C</span>
+                    <span id="v-speed">NORMAL</span>
                 </div>
-                <input type="range" id="slide-ambient" min="0" max="45" value="25">
-                <div class="info-text" id="info-ambient">Determina la base térmica. Entornos fríos enfrían la piel superficialmente (tonos azules), ambientes calientes la calientan (tonos rojos).</div>
+                <input type="range" id="s-speed" min="0.1" max="3" step="0.1" value="1">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); width: 100%;">
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>A. BLOOD FLOW</span>
+                        <button class="info-btn" onclick="toggleInfo('i-blood', this)">i</button>
+                    </div>
+                    <span id="v-blood">50%</span>
+                </div>
+                <input type="range" id="s-blood" min="0" max="100" value="50">
+                <div class="info-text" id="i-blood">Factor dominante. Más sangre incrementa dramáticamente la temperatura superficial local (rojo/blanco).</div>
             </div>
 
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>HUMIDITY</span>
-                        <button class="info-btn" onclick="toggleInfo('info-humidity', this)">i</button>
+                        <span>B. MUSCLE ACTIVITY</span>
+                        <button class="info-btn" onclick="toggleInfo('i-muscle', this)">i</button>
                     </div>
-                    <span id="val-humidity">40%</span>
+                    <span id="v-muscle">20%</span>
                 </div>
-                <input type="range" id="slide-humidity" min="0" max="100" value="40">
-                <div class="info-text" id="info-humidity">Afecta directamente la evaporación. A mayor humedad, el sudor no se evapora, anulando su efecto de enfriamiento sobre la piel.</div>
-            </div>
-            
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>SWEATING</span>
-                        <button class="info-btn" onclick="toggleInfo('info-sweat', this)">i</button>
-                    </div>
-                    <span id="val-sweat">10%</span>
-                </div>
-                <input type="range" id="slide-sweat" min="0" max="100" value="10">
-                <div class="info-text" id="info-sweat">El sudor absorbe energía al evaporarse (calor latente), logrando un enfriamiento dramático de la superficie térmica.</div>
+                <input type="range" id="s-muscle" min="0" max="100" value="20">
+                <div class="info-text" id="i-muscle">Aumenta el metabolismo local. Expande las áreas calientes y genera movimiento constante.</div>
             </div>
 
             <div class="slider-row">
                 <div class="slider-header">
                     <div class="header-left">
-                        <span>MUSCLE ACTIVITY</span>
-                        <button class="info-btn" onclick="toggleInfo('info-activity', this)">i</button>
+                        <span>C. INFLAMMATION</span>
+                        <button class="info-btn" onclick="toggleInfo('i-inflammation', this)">i</button>
                     </div>
-                    <span id="val-activity">20%</span>
+                    <span id="v-inflammation">0%</span>
                 </div>
-                <input type="range" id="slide-activity" min="0" max="100" value="20">
-                <div class="info-text" id="info-activity">Aumenta el consumo de ATP y el flujo sanguíneo, generando focos de radiación intensa (zonas blancas/amarillas).</div>
+                <input type="range" id="s-inflammation" min="0" max="100" value="0">
+                <div class="info-text" id="i-inflammation">Simula focos de calor anormales debido a procesos inflamatorios aislados.</div>
             </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>D. AMBIENT TEMP</span>
+                        <button class="info-btn" onclick="toggleInfo('i-ambient', this)">i</button>
+                    </div>
+                    <span id="v-ambient">25°C</span>
+                </div>
+                <input type="range" id="s-ambient" min="0" max="45" value="25">
+                <div class="info-text" id="i-ambient">Base térmica del ambiente. Desplaza todo el espectro de color.</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>E. HUMIDITY</span>
+                        <button class="info-btn" onclick="toggleInfo('i-humidity', this)">i</button>
+                    </div>
+                    <span id="v-humidity">40%</span>
+                </div>
+                <input type="range" id="s-humidity" min="0" max="100" value="40">
+                <div class="info-text" id="i-humidity">Afecta la capacidad del cuerpo para enfriarse mediante la evaporación.</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>F. SWEATING</span>
+                        <button class="info-btn" onclick="toggleInfo('i-sweat', this)">i</button>
+                    </div>
+                    <span id="v-sweat">10%</span>
+                </div>
+                <input type="range" id="s-sweat" min="0" max="100" value="10">
+                <div class="info-text" id="i-sweat">Enfriamiento por evaporación. Resta energía a la superficie, moviendo el mapa a tonos fríos.</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>G. AGE</span>
+                        <button class="info-btn" onclick="toggleInfo('i-age', this)">i</button>
+                    </div>
+                    <span id="v-age">30 YRS</span>
+                </div>
+                <input type="range" id="s-age" min="18" max="90" value="30">
+                <div class="info-text" id="i-age">Con la edad, la circulación periférica disminuye, enfriando extremidades y reduciendo focos activos.</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>H. BODY FAT %</span>
+                        <button class="info-btn" onclick="toggleInfo('i-fat', this)">i</button>
+                    </div>
+                    <span id="v-fat">15%</span>
+                </div>
+                <input type="range" id="s-fat" min="5" max="40" value="15">
+                <div class="info-text" id="i-fat">La grasa actúa como aislante térmico. Mayor grasa suaviza la imagen y reduce la temperatura superficial.</div>
+            </div>
+
+            <div class="slider-row">
+                <div class="slider-header">
+                    <div class="header-left">
+                        <span>I. DISEASES (Severity)</span>
+                        <button class="info-btn" onclick="toggleInfo('i-disease', this)">i</button>
+                    </div>
+                    <span id="v-disease">0%</span>
+                </div>
+                <input type="range" id="s-disease" min="0" max="100" value="0">
+                <div class="info-text" id="i-disease">Altera el patrón térmico creando anomalías caóticas e impredecibles en el flujo.</div>
+            </div>
+
         </div>
     </div>
 
@@ -184,20 +255,28 @@
         // --- Lógica de la UI ---
         function toggleInfo(id, btnElement) {
             const infoDiv = document.getElementById(id);
-            // Toggle de la clase visual para el texto
             infoDiv.classList.toggle('show');
-            // Toggle de la clase visual para el botón activo
             btnElement.classList.toggle('active');
         }
 
-        // --- Motor Termográfico (Canvas) ---
-        const canvas = document.getElementById('thermo-canvas');
-        const ctx = canvas.getContext('2d');
+        // Referencias de sliders
+        const sliders = {
+            speed: document.getElementById('s-speed'),
+            blood: document.getElementById('s-blood'),
+            muscle: document.getElementById('s-muscle'),
+            inflammation: document.getElementById('s-inflammation'),
+            ambient: document.getElementById('s-ambient'),
+            humidity: document.getElementById('s-humidity'),
+            sweat: document.getElementById('s-sweat'),
+            age: document.getElementById('s-age'),
+            fat: document.getElementById('s-fat'),
+            disease: document.getElementById('s-disease')
+        };
 
-        const sAmbient = document.getElementById('slide-ambient');
-        const sHumidity = document.getElementById('slide-humidity');
-        const sSweat = document.getElementById('slide-sweat');
-        const sActivity = document.getElementById('slide-activity');
+        // --- Motor Termográfico ---
+        const canvas = document.getElementById('thermo-canvas');
+        const container = document.getElementById('canvas-container');
+        const ctx = canvas.getContext('2d');
 
         function resize() {
             canvas.width = window.innerWidth;
@@ -206,91 +285,173 @@
         window.addEventListener('resize', resize);
         resize();
 
-        let mouse = { x: canvas.width/2, y: canvas.height/2 };
+        // 4. Zoom con Trackpad / Mouse Wheel
+        let currentZoom = 1;
+        window.addEventListener('wheel', (e) => {
+            // Evita el scroll por defecto si estamos fuera del panel de control
+            if(!e.target.closest('.control-panel')) {
+                e.preventDefault();
+                // Sensibilidad del zoom
+                currentZoom += e.deltaY * -0.002;
+                currentZoom = Math.max(0.5, Math.min(currentZoom, 4)); // Limites de zoom
+                container.style.transform = `scale(${currentZoom})`;
+            }
+        }, { passive: false });
+
+        // 3. Interacción fluida del cursor (Efecto Dedo)
+        let mouse = { x: canvas.width/2, y: canvas.height/2, vx: 0, vy: 0 };
+        let lastMouse = { x: mouse.x, y: mouse.y };
+
         window.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+            // Ajustar coordenadas según el nivel de zoom actual
+            const rect = canvas.getBoundingClientRect();
+            mouse.x = (e.clientX - rect.left) / currentZoom;
+            mouse.y = (e.clientY - rect.top) / currentZoom;
+            
+            // Calcular velocidad del ratón para arrastrar el fluido
+            mouse.vx = mouse.x - lastMouse.x;
+            mouse.vy = mouse.y - lastMouse.y;
+            
+            lastMouse.x = mouse.x;
+            lastMouse.y = mouse.y;
         });
 
+        // Partículas masivas para el efecto Metaball
         const particles = [];
-        const numParticles = 120;
+        const numParticles = 60; // Menos partículas pero mucho más grandes
 
-        class ThermoNode {
+        class HeatBlob {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.baseVx = (Math.random() - 0.5) * 1.5;
-                this.baseVy = (Math.random() - 0.5) * 1.5;
-                this.radius = Math.random() * 60 + 40;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                // Masas muy grandes para lograr el look continuo de tus imágenes
+                this.baseRadius = Math.random() * 150 + 100; 
+                this.angle = Math.random() * Math.PI * 2;
+                this.isInflammation = Math.random() > 0.8;
             }
 
-            update(activityLevel) {
-                let speedMult = 1 + (activityLevel / 100) * 3;
-                this.x += this.baseVx * speedMult;
-                this.y += this.baseVy * speedMult;
+            update(sys) {
+                // Movimiento autónomo orgánico (Respiración)
+                this.angle += 0.02 * sys.speed;
+                let wobbleX = Math.cos(this.angle) * sys.muscle;
+                let wobbleY = Math.sin(this.angle) * sys.muscle;
 
+                this.x += (this.vx * sys.blood * sys.speed) + wobbleX;
+                this.y += (this.vy * sys.blood * sys.speed) + wobbleY;
+
+                // Interacción con el cursor: Arrastre de fluido
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
-                this.x += dx * 0.005;
-                this.y += dy * 0.005;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 300) {
+                    let force = (300 - dist) / 300;
+                    // El cursor "arrastra" la partícula en la dirección en que se mueve el ratón
+                    this.x += mouse.vx * force * 0.5;
+                    this.y += mouse.vy * force * 0.5;
+                }
 
-                if (this.x < 0 || this.x > canvas.width) this.baseVx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.baseVy *= -1;
+                // Caos por enfermedad
+                if (sys.disease > 0 && Math.random() < 0.05) {
+                    this.x += (Math.random() - 0.5) * sys.disease * 5;
+                    this.y += (Math.random() - 0.5) * sys.disease * 5;
+                }
+
+                // Rebote en bordes suaves
+                if (this.x < -200) this.vx *= -1;
+                if (this.x > canvas.width + 200) this.vx *= -1;
+                if (this.y < -200) this.vy *= -1;
+                if (this.y > canvas.height + 200) this.vy *= -1;
             }
 
-            draw() {
-                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
-                gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
-                gradient.addColorStop(0.2, 'rgba(255, 255, 0, 0.8)');
-                gradient.addColorStop(0.5, 'rgba(255, 0, 0, 0.6)');
-                gradient.addColorStop(0.8, 'rgba(0, 0, 255, 0.3)');
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            draw(sys) {
+                // Radio afectado por la grasa corporal (aislante: difumina y achica focos)
+                let currentRadius = this.baseRadius * (1 - (sys.fat * 0.01));
+
+                // Colores tipo Ironbow termográfico. El CSS se encargará de fusionarlos.
+                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
+                
+                // Si es un foco de inflamación y el slider de inflamación está alto, quema en rojo/blanco
+                let pHeat = this.isInflammation ? sys.inflammation * 2 : 1;
+
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.8 * pHeat})`); // Centro caliente
+                gradient.addColorStop(0.3, `rgba(255, 255, 0, 0.7)`);
+                gradient.addColorStop(0.6, `rgba(255, 0, 0, 0.5)`);
+                gradient.addColorStop(0.9, `rgba(0, 0, 255, 0.3)`);
+                gradient.addColorStop(1, 'rgba(0, 0, 255, 0)');
 
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
                 ctx.fillStyle = gradient;
                 ctx.fill();
             }
         }
 
-        for (let i = 0; i < numParticles; i++) {
-            particles.push(new ThermoNode());
-        }
+        for (let i = 0; i < numParticles; i++) particles.push(new HeatBlob());
 
-        function calculateThermodynamics() {
-            let ambient = parseFloat(sAmbient.value);
-            let humidity = parseFloat(sHumidity.value);
-            let sweat = parseFloat(sSweat.value);
-            let activity = parseFloat(sActivity.value);
+        function updateSystem() {
+            let sys = {
+                speed: parseFloat(sliders.speed.value),
+                blood: parseFloat(sliders.blood.value) / 50, // 1 es normal
+                muscle: parseFloat(sliders.muscle.value) / 20,
+                inflammation: parseFloat(sliders.inflammation.value) / 100,
+                ambient: parseFloat(sliders.ambient.value),
+                humidity: parseFloat(sliders.humidity.value),
+                sweat: parseFloat(sliders.sweat.value),
+                age: parseFloat(sliders.age.value),
+                fat: parseFloat(sliders.fat.value),
+                disease: parseFloat(sliders.disease.value) / 100
+            };
 
-            document.getElementById('val-ambient').textContent = ambient + '°C';
-            document.getElementById('val-humidity').textContent = humidity + '%';
-            document.getElementById('val-sweat').textContent = sweat + '%';
-            document.getElementById('val-activity').textContent = activity + '%';
+            // Actualizar textos UI
+            let speedText = sys.speed === 1 ? "NORMAL" : (sys.speed < 1 ? "LOW" : "FAST");
+            document.getElementById('v-speed').textContent = sys.speed + "x (" + speedText + ")";
+            document.getElementById('v-blood').textContent = sliders.blood.value + '%';
+            document.getElementById('v-muscle').textContent = sliders.muscle.value + '%';
+            document.getElementById('v-inflammation').textContent = sliders.inflammation.value + '%';
+            document.getElementById('v-ambient').textContent = sys.ambient + '°C';
+            document.getElementById('v-humidity').textContent = sys.humidity + '%';
+            document.getElementById('v-sweat').textContent = sliders.sweat.value + '%';
+            document.getElementById('v-age').textContent = sys.age + ' YRS';
+            document.getElementById('v-fat').textContent = sys.fat + '%';
+            document.getElementById('v-disease').textContent = sliders.disease.value + '%';
 
-            let evaporativeEfficiency = 1 - (humidity / 100);
-            let coolingEffect = sweat * evaporativeEfficiency;
-            let ambientEffect = (ambient - 25) * 2;
-            let heatingEffect = activity * 0.8;
+            // Matemáticas Termodinámicas Globales para el Cambio de Color (Hue)
+            let evaporativeCooling = sys.sweat * (1 - (sys.humidity / 100)); // Humedad anula sudor
+            let ambientEffect = (sys.ambient - 25) * 2;
+            let ageCooling = (sys.age - 30) * 0.5; // Mayor edad enfría superficie
+            let bloodHeating = (sliders.blood.value - 50);
 
-            let hueShift = (coolingEffect * 1.5) - ambientEffect - heatingEffect;
-            hueShift = Math.max(-60, Math.min(hueShift, 180));
+            // Desplazamiento del tono en CSS
+            let hueShift = (evaporativeCooling * 1.5) + ageCooling - ambientEffect - bloodHeating;
+            hueShift = Math.max(-80, Math.min(hueShift, 200));
 
-            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(18px) contrast(3.5)`;
+            // Aplicar el filtro metaball al contenedor del canvas
+            // El contraste alto asegura bordes duros entre colores simulando el umbral de las cámaras térmicas
+            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(25px) contrast(6)`;
 
-            return activity;
+            return sys;
         }
 
         function animate() {
-            ctx.fillStyle = '#000000';
+            // Fondo azul profundo (Espacio frío base de la termografía)
+            ctx.fillStyle = '#0a1045'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Mezcla para que la luz de las partículas se sume
             ctx.globalCompositeOperation = 'screen';
 
-            let currentActivityLevel = calculateThermodynamics();
+            let sys = updateSystem();
+
+            // Decaer la velocidad del mouse para que el "dedo" no arrastre por siempre si el ratón se detiene
+            mouse.vx *= 0.9;
+            mouse.vy *= 0.9;
 
             particles.forEach(p => {
-                p.update(currentActivityLevel);
-                p.draw();
+                p.update(sys);
+                p.draw(sys);
             });
 
             requestAnimationFrame(animate);
