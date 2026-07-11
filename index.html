@@ -36,7 +36,7 @@
             filter: blur(15px) contrast(2.5);
         }
 
-        /* Panel más compacto verticalmente */
+        /* Panel con padding uniforme en todos sus lados */
         .panel {
             position: absolute;
             top: 50%;
@@ -45,18 +45,17 @@
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
-            padding: 15px 20px; /* Menos padding vertical */
+            padding: 24px; /* Padding exacto y simétrico */
             z-index: 10;
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
         }
 
         .control-panel {
-            width: 260px; 
-            max-height: 90vh; 
+            width: 250px; 
+            max-height: 85vh; 
             overflow-y: auto;
             display: flex; flex-direction: column; 
-            gap: 12px; /* Reducido de 16px para mayor compresión vertical */
         }
 
         .control-panel::-webkit-scrollbar { width: 4px; }
@@ -66,9 +65,10 @@
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 10px; /* Reducido */
-            position: sticky; top: -15px; 
-            z-index: 2; margin-top: -15px; padding-top: 15px;
+            padding-bottom: 15px; 
+            margin-bottom: 15px; /* Separación con el primer slider */
+            position: sticky; top: 0; 
+            z-index: 2; background: var(--panel-bg);
         }
         
         .header h1 { font-size: 0.9rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
@@ -77,8 +77,8 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Sliders más comprimidos */
-        .slider-group { display: flex; flex-direction: column; gap: 14px; margin-top: 0px;}
+        /* Sliders */
+        .slider-group { display: flex; flex-direction: column; gap: 16px; padding-bottom: 4px; }
         .slider-row { display: flex; flex-direction: column; gap: 6px; }
         .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-muted); font-weight: bold; }
         
@@ -120,119 +120,121 @@
 
     <canvas id="thermo-canvas"></canvas>
 
-    <div class="panel control-panel">
-        <div class="header">
-            <h1>THERMOGRAPHY STUDIO</h1>
-            <div class="status">LIVE</div>
-        </div>
-
-        <div class="slider-group">
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>BLOOD FLOW</span>
-                        <button class="info-btn" onclick="toggleInfo('i-blood', this)">i</button>
-                    </div>
-                    <span id="v-blood">50%</span>
-                </div>
-                <input type="range" id="s-blood" min="0" max="100" value="50">
-                <div class="info-text" id="i-blood">Dominant factor. More blood flow increases local surface temperature (red/white areas).</div>
+    <div class="panel">
+        <div class="control-panel">
+            <div class="header">
+                <h1>THERMOGRAPHY STUDIO</h1>
+                <div class="status">LIVE</div>
             </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>MUSCLE ACTIVITY</span>
-                        <button class="info-btn" onclick="toggleInfo('i-muscle', this)">i</button>
+            <div class="slider-group">
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>BLOOD FLOW</span>
+                            <button class="info-btn" onclick="toggleInfo('i-blood', this)">i</button>
+                        </div>
+                        <span id="v-blood">50%</span>
                     </div>
-                    <span id="v-muscle">50%</span>
+                    <input type="range" id="s-blood" min="0" max="100" value="50">
+                    <div class="info-text" id="i-blood">Dominant factor. More blood flow increases local surface temperature (red/white areas).</div>
                 </div>
-                <input type="range" id="s-muscle" min="0" max="100" value="50">
-                <div class="info-text" id="i-muscle">Increases local metabolism. Expands hot zones and creates kinetic vibrations.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>INFLAMMATION</span>
-                        <button class="info-btn" onclick="toggleInfo('i-inflammation', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>MUSCLE ACTIVITY</span>
+                            <button class="info-btn" onclick="toggleInfo('i-muscle', this)">i</button>
+                        </div>
+                        <span id="v-muscle">50%</span>
                     </div>
-                    <span id="v-inflammation">50%</span>
+                    <input type="range" id="s-muscle" min="0" max="100" value="50">
+                    <div class="info-text" id="i-muscle">Increases local metabolism. Expands hot zones and creates kinetic vibrations.</div>
                 </div>
-                <input type="range" id="s-inflammation" min="0" max="100" value="50">
-                <div class="info-text" id="i-inflammation">Simulates abnormal localized heat pockets caused by inflammatory processes.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>AMBIENT TEMP</span>
-                        <button class="info-btn" onclick="toggleInfo('i-ambient', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>INFLAMMATION</span>
+                            <button class="info-btn" onclick="toggleInfo('i-inflammation', this)">i</button>
+                        </div>
+                        <span id="v-inflammation">50%</span>
                     </div>
-                    <span id="v-ambient">50%</span>
+                    <input type="range" id="s-inflammation" min="0" max="100" value="50">
+                    <div class="info-text" id="i-inflammation">Simulates abnormal localized heat pockets caused by inflammatory processes.</div>
                 </div>
-                <input type="range" id="s-ambient" min="0" max="100" value="50">
-                <div class="info-text" id="i-ambient">Base thermal environment. Shifts the entire spectrum. Low is blue, high is red.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>HUMIDITY</span>
-                        <button class="info-btn" onclick="toggleInfo('i-humidity', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>AMBIENT TEMP</span>
+                            <button class="info-btn" onclick="toggleInfo('i-ambient', this)">i</button>
+                        </div>
+                        <span id="v-ambient">50%</span>
                     </div>
-                    <span id="v-humidity">50%</span>
+                    <input type="range" id="s-ambient" min="0" max="100" value="50">
+                    <div class="info-text" id="i-ambient">Base thermal environment. Shifts the entire spectrum. Low is blue, high is red.</div>
                 </div>
-                <input type="range" id="s-humidity" min="0" max="100" value="50">
-                <div class="info-text" id="i-humidity">Affects the body's ability to cool down. High humidity prevents sweat evaporation.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>SWEATING</span>
-                        <button class="info-btn" onclick="toggleInfo('i-sweat', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>HUMIDITY</span>
+                            <button class="info-btn" onclick="toggleInfo('i-humidity', this)">i</button>
+                        </div>
+                        <span id="v-humidity">50%</span>
                     </div>
-                    <span id="v-sweat">50%</span>
+                    <input type="range" id="s-humidity" min="0" max="100" value="50">
+                    <div class="info-text" id="i-humidity">Affects the body's ability to cool down. High humidity prevents sweat evaporation.</div>
                 </div>
-                <input type="range" id="s-sweat" min="0" max="100" value="50">
-                <div class="info-text" id="i-sweat">Evaporative cooling mechanism. Cools the map down (blue/purple tones).</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>AGE</span>
-                        <button class="info-btn" onclick="toggleInfo('i-age', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>SWEATING</span>
+                            <button class="info-btn" onclick="toggleInfo('i-sweat', this)">i</button>
+                        </div>
+                        <span id="v-sweat">50%</span>
                     </div>
-                    <span id="v-age">50 YRS</span>
+                    <input type="range" id="s-sweat" min="0" max="100" value="50">
+                    <div class="info-text" id="i-sweat">Evaporative cooling mechanism. Cools the map down (blue/purple tones).</div>
                 </div>
-                <input type="range" id="s-age" min="0" max="100" value="50">
-                <div class="info-text" id="i-age">Older age decreases peripheral circulation, cooling down extremities.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>BODY FAT %</span>
-                        <button class="info-btn" onclick="toggleInfo('i-fat', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>AGE</span>
+                            <button class="info-btn" onclick="toggleInfo('i-age', this)">i</button>
+                        </div>
+                        <span id="v-age">50 YRS</span>
                     </div>
-                    <span id="v-fat">50%</span>
+                    <input type="range" id="s-age" min="0" max="100" value="50">
+                    <div class="info-text" id="i-age">Older age decreases peripheral circulation, cooling down extremities.</div>
                 </div>
-                <input type="range" id="s-fat" min="0" max="100" value="50">
-                <div class="info-text" id="i-fat">Acts as an insulator. Higher fat softens the thermal signature on the surface.</div>
-            </div>
 
-            <div class="slider-row">
-                <div class="slider-header">
-                    <div class="header-left">
-                        <span>DISEASES (Severity)</span>
-                        <button class="info-btn" onclick="toggleInfo('i-disease', this)">i</button>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>BODY FAT %</span>
+                            <button class="info-btn" onclick="toggleInfo('i-fat', this)">i</button>
+                        </div>
+                        <span id="v-fat">50%</span>
                     </div>
-                    <span id="v-disease">50%</span>
+                    <input type="range" id="s-fat" min="0" max="100" value="50">
+                    <div class="info-text" id="i-fat">Acts as an insulator. Higher fat softens the thermal signature on the surface.</div>
                 </div>
-                <input type="range" id="s-disease" min="0" max="100" value="50">
-                <div class="info-text" id="i-disease">Alters the thermal pattern, creating chaotic and unpredictable anomalies.</div>
+
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>DISEASES (Severity)</span>
+                            <button class="info-btn" onclick="toggleInfo('i-disease', this)">i</button>
+                        </div>
+                        <span id="v-disease">50%</span>
+                    </div>
+                    <input type="range" id="s-disease" min="0" max="100" value="50">
+                    <div class="info-text" id="i-disease">Alters the thermal pattern, creating chaotic and unpredictable anomalies.</div>
+                </div>
             </div>
         </div>
     </div>
@@ -277,12 +279,15 @@
         
         window.addEventListener('resize', resize);
         
-        let currentZoom = 1;
+        // ¡MEGA ZOOM INICIAL! Empezamos en 4.5x para ver sólo abstracto al abrir la webapp
+        let currentZoom = 4.5; 
+        
         window.addEventListener('wheel', (e) => {
-            if(!e.target.closest('.control-panel')) {
+            if(!e.target.closest('.panel')) {
                 e.preventDefault();
                 currentZoom += e.deltaY * -0.002;
-                currentZoom = Math.max(0.5, Math.min(currentZoom, 5));
+                // Amplié el límite a 6 por si el usuario quiere hacer aún más zoom hacia adentro
+                currentZoom = Math.max(0.5, Math.min(currentZoom, 6));
             }
         }, { passive: false });
 
@@ -314,12 +319,10 @@
                 this.vy = 0;
                 
                 this.isAmbient = isAmbient;
-                // Las moléculas sueltas son más pequeñas
                 this.baseRadius = isAmbient ? Math.random() * 30 + 15 : Math.random() * 80 + 70; 
                 this.isInflammation = Math.random() > 0.85;
                 this.isExtremity = isExtremity; 
                 this.randomPhase = Math.random() * Math.PI * 2;
-                // Para el movimiento orbital de las partículas sueltas
                 this.orbitSpeed = (Math.random() - 0.5) * 0.02;
                 this.orbitDist = Math.random() * 50 + 20;
             }
@@ -330,11 +333,9 @@
                 let targetY = this.baseY;
 
                 if (this.isAmbient) {
-                    // Movimiento flotante más holgado para las partículas del exterior
                     targetX += Math.cos(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
                     targetY += Math.sin(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2;
                 } else {
-                    // Vibración muscular atada al cuerpo
                     targetX += Math.cos(this.randomPhase) * 20 * sys.muscle;
                     targetY += Math.sin(this.randomPhase) * 20 * sys.muscle;
                 }
@@ -350,13 +351,11 @@
                 
                 if (dist < 250) {
                     let force = (250 - dist) / 250;
-                    // Las partículas flotantes reaccionan mucho más al movimiento del cursor
                     let pushFactor = this.isAmbient ? 0.35 : 0.15;
                     this.vx += mouse.vx * force * pushFactor;
                     this.vy += mouse.vy * force * pushFactor;
                 }
 
-                // Las partículas ambientales tienen un resorte más suelto para poder viajar más lejos
                 let springTension = this.isAmbient ? 0.015 : 0.05;
                 let springForceX = (targetX - this.x) * springTension;
                 let springForceY = (targetY - this.y) * springTension;
@@ -364,7 +363,7 @@
                 this.vx += springForceX;
                 this.vy += springForceY;
 
-                this.vx *= 0.88; // Ligeramente menos fricción para un flujo más suave
+                this.vx *= 0.88; 
                 this.vy *= 0.88;
                 this.x += this.vx;
                 this.y += this.vy;
@@ -379,7 +378,6 @@
                 let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
                 let heat = this.isInflammation ? (1 + sys.inflammation) : sys.blood;
 
-                // Las moléculas flotantes son ligeramente más tenues
                 let alphaMult = this.isAmbient ? 0.6 : 1;
 
                 gradient.addColorStop(0, `rgba(255, 255, 255, ${0.35 * heat * alphaMult})`); 
@@ -400,25 +398,23 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2;
 
-            // --- SILUETA ORGÁNICA ASIMÉTRICA ---
-            
-            // Torso (Más ancho arriba, un poco irregular)
+            // Torso
             for(let i = 0; i < 70; i++) {
-                let rx = (Math.random() - 0.5) * 220 + (Math.random() * 30); // Ligero sesgo a la derecha
+                let rx = (Math.random() - 0.5) * 220 + (Math.random() * 30); 
                 let ry = (Math.random() - 0.5) * 350;
                 particles.push(new ThermoNode(cx + rx, cy + ry, false));
             }
             
-            // Cabeza (Un poco inclinada)
+            // Cabeza
             for(let i = 0; i < 20; i++) {
                 particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 260 + (Math.random()-0.5)*100, true));
             }
             
-            // Brazo Izquierdo (Más pegado al cuerpo)
+            // Brazo Izquierdo
             for(let i = 0; i < 18; i++) {
                 particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*70, cy - 40 + (Math.random()-0.5)*200, true)); 
             }
-            // Brazo Derecho (Más despegado y extendido)
+            // Brazo Derecho
             for(let i = 0; i < 18; i++) {
                 particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*80, cy + 20 + (Math.random()-0.5)*180, true)); 
             }
@@ -427,14 +423,13 @@
             for(let i = 0; i < 25; i++) {
                 particles.push(new ThermoNode(cx - 90 + (Math.random()-0.5)*90, cy + 280 + (Math.random()-0.5)*220, true)); 
             }
-            // Pierna Derecha (Postura ligeramente asimétrica)
+            // Pierna Derecha
             for(let i = 0; i < 25; i++) {
                 particles.push(new ThermoNode(cx + 100 + (Math.random()-0.5)*80, cy + 300 + (Math.random()-0.5)*200, true)); 
             }
 
-            // --- MOLÉCULAS DISPERSAS (AMBIENTE) ---
+            // Moléculas flotantes
             for(let i = 0; i < 50; i++) {
-                // Radio orbital aleatorio para esparcirlas por la pantalla
                 let angle = Math.random() * Math.PI * 2;
                 let distance = 350 + Math.random() * 450; 
                 let px = cx + Math.cos(angle) * distance;
