@@ -32,7 +32,6 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            /* Desenfoque equilibrado para un fluido abstracto y continuo */
             filter: blur(15px);
         }
 
@@ -41,70 +40,73 @@
             touch-action: none; 
         }
 
+        /* 1. Panel Ultra-Reducido (-30%) */
         .panel {
             position: absolute;
             top: 50%;
-            left: 30px;
+            left: 20px;
             transform: translateY(-50%);
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
-            padding: 24px; 
+            padding: 16px; /* Menos espacio interior */
             z-index: 10;
             border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .control-panel {
-            width: 250px; 
+            width: 175px; /* Reducción drástica del ancho */
             max-height: 85vh; 
             overflow-y: auto;
             overflow-x: hidden;
             display: flex; flex-direction: column; 
         }
 
-        .control-panel::-webkit-scrollbar { width: 4px; }
+        .control-panel::-webkit-scrollbar { width: 3px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
         .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); 
-            padding-bottom: 15px; 
-            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            margin-bottom: 10px; 
         }
         
-        .header h1 { font-size: 0.9rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
-        .status { color: var(--accent-red); font-size: 0.7rem; display: flex; align-items: center; gap: 6px; animation: pulse 2s infinite; font-weight: bold;}
-        .status::before { content: ''; width: 6px; height: 6px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 6px var(--accent-red); }
+        /* Tipografías Micro */
+        .header h1 { font-size: 0.65rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
+        .status { color: var(--accent-red); font-size: 0.55rem; display: flex; align-items: center; gap: 4px; animation: pulse 2s infinite; font-weight: bold;}
+        .status::before { content: ''; width: 4px; height: 4px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 4px var(--accent-red); }
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .slider-group { display: flex; flex-direction: column; gap: 16px; padding-bottom: 4px; }
-        .slider-row { display: flex; flex-direction: column; gap: 6px; }
-        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-muted); font-weight: bold; }
+        .slider-group { display: flex; flex-direction: column; gap: 10px; padding-bottom: 2px; }
+        .slider-row { display: flex; flex-direction: column; gap: 4px; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.55rem; color: var(--text-muted); font-weight: bold; }
         
-        .header-left { display: flex; align-items: center; gap: 8px; }
+        .header-left { display: flex; align-items: center; gap: 6px; }
         .info-btn {
             background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
-            border-radius: 50%; width: 14px; height: 14px; font-size: 8px; cursor: pointer;
+            border-radius: 50%; width: 10px; height: 10px; font-size: 6px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: all 0.2s;
         }
         .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
 
         .info-text {
-            display: none; font-size: 0.65rem; color: #f8fafc; background: #1e293b;
-            padding: 10px; border-left: 3px solid var(--accent-blue); line-height: 1.3; 
-            margin-top: 6px; margin-bottom: 2px; border-radius: 4px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none; font-size: 0.5rem; color: #f8fafc; background: #1e293b;
+            padding: 8px; border-left: 2px solid var(--accent-blue); line-height: 1.3; 
+            margin-top: 4px; margin-bottom: 2px; border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Controles de Rango Micro */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -5px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3);}
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px;}
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 10px; width: 10px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -3.5px; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: #e2e8f0; border-radius: 1.5px;}
         
         #s-blood::-webkit-slider-runnable-track { background: #ef4444; } 
         #s-muscle::-webkit-slider-runnable-track { background: #f97316; } 
@@ -272,7 +274,7 @@
         const ctx = canvas.getContext('2d');
         
         let dpr = Math.min(window.devicePixelRatio || 1, 2);
-        let currentZoom = 1; 
+        let currentZoom = 4.5; 
 
         function resize() {
             dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -282,16 +284,14 @@
         }
         window.addEventListener('resize', resize);
         
-        // --- NAVEGACIÓN (Solo Zoom) ---
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
                 currentZoom += e.deltaY * -0.005; 
-                currentZoom = Math.max(0.4, Math.min(currentZoom, 6));
+                currentZoom = Math.max(0.4, Math.min(currentZoom, 6)); // Límite de Zoom Out 0.4x
             }
         }, { passive: false });
 
-        // --- INTERACCIÓN DEL DEDO (Restaurada) ---
         let mouse = { x: window.innerWidth/2, y: window.innerHeight/2, vx: 0, vy: 0 };
         let lastMouse = { x: mouse.x, y: mouse.y };
 
@@ -299,7 +299,6 @@
             let rawX = e.clientX * dpr;
             let rawY = e.clientY * dpr;
             
-            // Calculamos la posición considerando el zoom centrado
             mouse.x = (rawX - canvas.width/2) / currentZoom + canvas.width/2;
             mouse.y = (rawY - canvas.height/2) / currentZoom + canvas.height/2;
             
@@ -310,7 +309,7 @@
             lastMouse.y = mouse.y;
         });
 
-        // --- CACHÉ DE RENDERIZADO DE ALTO RENDIMIENTO ---
+        // Caché del Espectro de Color (Alta Eficiencia)
         const brushCache = [];
         const CACHE_STEPS = 100;
         
@@ -344,7 +343,7 @@
             for (let i = 0; i <= CACHE_STEPS; i++) {
                 let temp = (i / CACHE_STEPS) * 1.2; 
                 let c = document.createElement('canvas');
-                let size = 200; // Pinceles más grandes para pantallas abstractas
+                let size = 256; // High-res cache
                 c.width = size; c.height = size;
                 let cCtx = c.getContext('2d');
                 
@@ -373,37 +372,41 @@
                 
                 this.baseTemp = baseTemp;
                 this.baseRadius = radius; 
-                this.isInflammation = Math.random() > 0.95; // 5% son focos de inflamación
-                this.isPeripheral = isPeripheral; // Afectado por la edad
-                this.isAdipose = isAdipose; // Afectado por grasa
+                this.isInflammation = Math.random() > 0.95; 
+                this.isPeripheral = isPeripheral; 
+                this.isAdipose = isAdipose; 
                 
                 this.angle = Math.random() * Math.PI * 2;
+                // 2. ORBITA LOCAL: Órbita sobre su propio eje, no sobre el centro de la pantalla
+                this.orbitDist = (Math.random() * 150 + 50) * dpr; 
+                this.orbitSpeed = (Math.random() - 0.5) * 0.02;
             }
 
             update(sys) {
-                this.angle += 0.03 * sys.muscle;
-                let targetX = this.baseX + Math.cos(this.angle) * (20 * dpr) * sys.muscle;
-                let targetY = this.baseY + Math.sin(this.angle) * (20 * dpr) * sys.muscle;
+                this.angle += this.orbitSpeed * (1 + sys.muscle * 3);
+                
+                // Orbitan alrededor de SU PROPIA base, asegurando que cubren toda el área expandida sin agruparse
+                let targetX = this.baseX + Math.cos(this.angle) * this.orbitDist;
+                let targetY = this.baseY + Math.sin(this.angle) * this.orbitDist;
 
                 if(sys.disease > 0.5 && Math.random() < 0.05) {
-                    targetX += (Math.random() - 0.5) * 150 * dpr * sys.disease;
-                    targetY += (Math.random() - 0.5) * 150 * dpr * sys.disease;
+                    targetX += (Math.random() - 0.5) * 200 * dpr * sys.disease;
+                    targetY += (Math.random() - 0.5) * 200 * dpr * sys.disease;
                 }
 
-                // Interacción fuerte del Dedo (Arrastre de Fluidos)
+                // Dedo / Mouse
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 
-                let interactionRadius = 400 * dpr; // Radio de interacción masivo
+                let interactionRadius = 400 * dpr; 
                 if (dist < interactionRadius) {
                     let force = (interactionRadius - dist) / interactionRadius;
-                    // Empuja fuertemente las partículas en la dirección del mouse
                     this.vx += mouse.vx * force * 0.45;
                     this.vy += mouse.vy * force * 0.45;
                 }
 
-                // Resorte suave para que se sienta como un líquido espeso que regresa a su lugar
+                // Resorte local
                 let springTension = 0.015; 
                 let springForceX = (targetX - this.x) * springTension;
                 let springForceY = (targetY - this.y) * springTension;
@@ -411,7 +414,7 @@
                 this.vx += springForceX;
                 this.vy += springForceY;
 
-                this.vx *= 0.86; // Fricción del fluido
+                this.vx *= 0.86; 
                 this.vy *= 0.86;
                 this.x += this.vx;
                 this.y += this.vy;
@@ -446,23 +449,23 @@
         function initAbstractFluid() {
             particles.length = 0; 
             
-            // Llenamos un área que sea un 150% del tamaño de la pantalla para evitar ver bordes al hacer zoom o desplazar
-            let w = canvas.width * 1.5;
-            let h = canvas.height * 1.5;
+            // 3. EXPANSIÓN MASIVA: Generamos partículas en un área 3 veces más grande que la pantalla.
+            // Al hacer zoom out a 0.4x, el área visible es 2.5x, por lo tanto 3x cubre absolutamente todo sin márgenes negros.
+            let w = canvas.width * 3;
+            let h = canvas.height * 3;
             let startX = canvas.width/2 - w/2;
             let startY = canvas.height/2 - h/2;
 
-            let numParticles = 400; // Gran cantidad de fluidos
+            // Aumentamos los nodos para cubrir la nueva zona masiva
+            let numParticles = 800; 
             
             for(let i = 0; i < numParticles; i++) {
                 let px = startX + Math.random() * w;
                 let py = startY + Math.random() * h;
                 
-                // Temperatura base aleatoria (0.3 a 0.8) para tener diversidad de colores
                 let baseTemp = 0.3 + Math.random() * 0.5;
-                let radius = (Math.random() * 150 + 100) * dpr; // Nodos muy grandes
+                let radius = (Math.random() * 150 + 100) * dpr; 
                 
-                // Atributos aleatorios
                 let isPeripheral = Math.random() > 0.6;
                 let isAdipose = Math.random() > 0.5;
 
