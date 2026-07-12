@@ -5,18 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thermography Studio</title>
     <style>
-        /* Importamos una tipografía estilo mapa de bits / retro terminal */
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&display=swap');
 
         :root {
             --bg-color: #000000;
-            --panel-bg: rgba(5, 10, 42, 0.9); /* Azul profundo tipo cámara industrial */
-            --text-main: #ffffff; /* Texto blanco brillante */
-            --text-muted: #8ba4e8; /* Azul pálido para subtítulos */
-            --accent-red: #ff3333;
+            --panel-bg: rgba(245, 245, 245, 0.95);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --accent-red: #ef4444;
             --accent-blue: #3b82f6;
-            --border-color: rgba(139, 164, 232, 0.4);
-            --font-mono: 'VT323', monospace;
+            --border-color: rgba(203, 213, 225, 0.8);
+            --font-mono: 'Space Mono', monospace;
         }
 
         body, html {
@@ -24,8 +23,6 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: var(--font-mono);
-            /* Aumentamos un poco el tamaño base porque la fuente de bits es más pequeña */
-            font-size: 18px; 
             width: 100vw; height: 100vh;
             overflow: hidden; 
         }
@@ -43,102 +40,96 @@
             touch-action: none; 
         }
 
-        /* Panel estilo retro/bloque */
         .panel {
             position: absolute;
             top: 50%;
             left: 20px;
             transform: translateY(-50%);
             background-color: var(--panel-bg);
-            border: 2px solid var(--text-muted); /* Borde duro sin radio */
-            backdrop-filter: blur(4px);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
             padding: 16px; 
             z-index: 10;
-            border-radius: 0; /* Aspecto cuadrado/retro */
-            box-shadow: 5px 5px 0px rgba(0,0,0,0.8); /* Sombra dura retro */
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .control-panel {
-            width: 180px; 
+            width: 175px; 
             max-height: 85vh; 
             overflow-y: auto;
             overflow-x: hidden;
             display: flex; flex-direction: column; 
         }
 
-        /* Scrollbar bloque */
-        .control-panel::-webkit-scrollbar { width: 6px; }
-        .control-panel::-webkit-scrollbar-track { background: var(--panel-bg); }
-        .control-panel::-webkit-scrollbar-thumb { background: var(--text-muted); }
+        .control-panel::-webkit-scrollbar { width: 3px; }
+        .control-panel::-webkit-scrollbar-track { background: transparent; }
+        .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 2px dashed var(--border-color); 
+            border-bottom: 1px solid var(--border-color); 
             padding-bottom: 10px; 
             margin-bottom: 10px; 
         }
         
-        .header h1 { font-size: 1.2rem; margin: 0; letter-spacing: 1px; color: var(--text-main); font-weight: normal;}
-        .status { color: var(--accent-red); font-size: 1rem; display: flex; align-items: center; gap: 4px; animation: pulse 1s infinite; font-weight: normal;}
-        .status::before { content: ''; width: 8px; height: 8px; background-color: var(--accent-red); border-radius: 0; }
+        .header h1 { font-size: 0.65rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
+        .status { color: var(--accent-red); font-size: 0.55rem; display: flex; align-items: center; gap: 4px; animation: pulse 2s infinite; font-weight: bold;}
+        .status::before { content: ''; width: 4px; height: 4px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 4px var(--accent-red); }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        .slider-group { display: flex; flex-direction: column; gap: 12px; padding-bottom: 2px; }
-        .slider-row { display: flex; flex-direction: column; gap: 2px; }
-        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 1rem; color: var(--text-muted); }
+        .slider-group { display: flex; flex-direction: column; gap: 10px; padding-bottom: 2px; }
+        .slider-row { display: flex; flex-direction: column; gap: 4px; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.55rem; color: var(--text-muted); font-weight: bold; }
         
         .header-left { display: flex; align-items: center; gap: 6px; }
-        
-        /* Botón INFO estilo bloque */
         .info-btn {
             background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
-            border-radius: 0; width: 14px; height: 14px; font-size: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: none;
+            border-radius: 50%; width: 10px; height: 10px; font-size: 6px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: all 0.2s;
         }
-        .info-btn:hover, .info-btn.active { background: var(--text-main); color: var(--panel-bg); border-color: var(--text-main); }
+        .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
 
         .info-text {
-            display: none; font-size: 0.9rem; color: var(--text-main); background: #020516;
-            padding: 8px; border: 1px dashed var(--border-color); line-height: 1.1; 
-            margin-top: 4px; margin-bottom: 2px; border-radius: 0;
+            display: none; font-size: 0.5rem; color: #f8fafc; background: #1e293b;
+            padding: 8px; border-left: 2px solid var(--accent-blue); line-height: 1.3; 
+            margin-top: 4px; margin-bottom: 2px; border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .info-text.show { display: block; }
+        .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        /* Tumb de slider bloque retro */
-        input[type=range]::-webkit-slider-thumb { 
-            -webkit-appearance: none; height: 16px; width: 8px; 
-            background: var(--text-main); border-radius: 0; cursor: pointer; margin-top: -6px; 
-        }
-        input[type=range]::-webkit-slider-runnable-track { 
-            width: 100%; height: 4px; cursor: pointer; background: var(--border-color); border-radius: 0;
-        }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 10px; width: 10px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -3.5px; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: #e2e8f0; border-radius: 1.5px;}
         
-        /* Colores vivos sobre el azul oscuro */
-        #s-size::-webkit-slider-runnable-track { background: linear-gradient(90deg, var(--text-muted), var(--text-main)); } 
-        #s-blood::-webkit-slider-runnable-track { background: #ff3333; } 
-        #s-muscle::-webkit-slider-runnable-track { background: #ff9900; } 
-        #s-inflammation::-webkit-slider-runnable-track { background: #cc0000; } 
-        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #33ccff, #ff3333); } 
-        #s-humidity::-webkit-slider-runnable-track { background: #00ffff; } 
-        #s-sweat::-webkit-slider-runnable-track { background: #3366ff; } 
-        #s-age::-webkit-slider-runnable-track { background: #cccccc; } 
-        #s-fat::-webkit-slider-runnable-track { background: #ffff00; } 
-        #s-disease::-webkit-slider-runnable-track { background: #cc33ff; } 
+        #s-size::-webkit-slider-runnable-track { background: linear-gradient(90deg, #94a3b8, #f8fafc); } 
+        #s-blood::-webkit-slider-runnable-track { background: #ef4444; } 
+        #s-muscle::-webkit-slider-runnable-track { background: #f97316; } 
+        #s-inflammation::-webkit-slider-runnable-track { background: #991b1b; } 
+        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); } 
+        #s-humidity::-webkit-slider-runnable-track { background: #06b6d4; } 
+        #s-sweat::-webkit-slider-runnable-track { background: #60a5fa; } 
+        #s-age::-webkit-slider-runnable-track { background: #9ca3af; } 
+        #s-fat::-webkit-slider-runnable-track { background: #fde047; } 
+        #s-disease::-webkit-slider-runnable-track { background: #8b5cf6; } 
 
-        /* Controles de Exportación estilo OSD */
-        .export-section { margin-top: 15px; border-top: 2px dashed var(--border-color); padding-top: 10px; }
-        .export-title { font-size: 1rem; color: var(--text-main); text-align: center; margin-bottom: 5px; letter-spacing: 1px;}
-        .actions-row { display: flex; gap: 4px; justify-content: space-between; margin-bottom: 10px;}
-        
+        .export-section { margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        /* Títulos limpiados */
+        .export-title { font-size: 0.55rem; color: var(--text-main); font-weight: bold; margin-bottom: 5px; text-align: center;}
+        .actions-row { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 10px;}
         .btn-action {
-            flex: 1; background-color: var(--panel-bg); border: 1px solid var(--text-muted);
-            color: var(--text-main); font-family: var(--font-mono); font-size: 0.9rem;
-            padding: 4px 0; border-radius: 0; cursor: pointer;
+            flex: 1; background-color: white; border: 1px solid var(--border-color);
+            color: var(--text-main); font-family: var(--font-mono); font-size: 0.5rem;
+            font-weight: bold; padding: 6px 0; border-radius: 3px; cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-action:hover { background-color: var(--text-main); color: var(--panel-bg); }
+        .btn-action:hover { background-color: var(--accent-blue); color: white; border-color: var(--accent-blue); }
         .btn-action.recording { background-color: var(--accent-red); color: white; border-color: var(--accent-red); animation: recPulse 1s infinite alternate; }
+        
+        @keyframes recPulse { 0% { opacity: 1; } 100% { opacity: 0.8; } }
 
     </style>
 </head>
@@ -151,7 +142,7 @@
     <div class="panel">
         <div class="control-panel">
             <div class="header">
-                <h1>THERMO STUDIO</h1>
+                <h1>THERMOGRAPHY STUDIO</h1>
                 <div class="status">LIVE</div>
             </div>
 
@@ -159,7 +150,7 @@
                 <div class="slider-row">
                     <div class="slider-header">
                         <div class="header-left">
-                            <span>PART_SIZE</span>
+                            <span>PARTICLE SIZE</span>
                         </div>
                         <span id="v-size">100%</span>
                     </div>
@@ -168,7 +159,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>BLOOD_FLOW</span></div>
+                        <div class="header-left"><span>BLOOD FLOW</span></div>
                         <span id="v-blood">50%</span>
                     </div>
                     <input type="range" id="s-blood" min="0" max="100" value="50">
@@ -176,7 +167,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>MUSCLE_ACT</span></div>
+                        <div class="header-left"><span>MUSCLE ACTIVITY</span></div>
                         <span id="v-muscle">50%</span>
                     </div>
                     <input type="range" id="s-muscle" min="0" max="100" value="50">
@@ -192,7 +183,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>AMBIENT_TMP</span></div>
+                        <div class="header-left"><span>AMBIENT TEMP</span></div>
                         <span id="v-ambient">50%</span>
                     </div>
                     <input type="range" id="s-ambient" min="0" max="100" value="50">
@@ -224,7 +215,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>BODY_FAT_%</span></div>
+                        <div class="header-left"><span>BODY FAT %</span></div>
                         <span id="v-fat">50%</span>
                     </div>
                     <input type="range" id="s-fat" min="0" max="100" value="50">
@@ -232,7 +223,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>DISEASES</span></div>
+                        <div class="header-left"><span>DISEASES (Severity)</span></div>
                         <span id="v-disease">50%</span>
                     </div>
                     <input type="range" id="s-disease" min="0" max="100" value="50">
@@ -240,14 +231,14 @@
             </div>
 
             <div class="export-section">
-                <div class="export-title">[ EXPORT ]</div>
+                <div class="export-title">EXPORT</div>
                 <div class="actions-row">
                     <button class="btn-action" onclick="exportMedia(1920, 1080, 'png')">16:9</button>
                     <button class="btn-action" onclick="exportMedia(1080, 1920, 'png')">9:16</button>
                     <button class="btn-action" onclick="exportMedia(1080, 1440, 'png')">3:4</button>
                 </div>
                 
-                <div class="export-title">[ RECORD ]</div>
+                <div class="export-title">RECORD</div>
                 <div class="actions-row">
                     <button class="btn-action" id="btn-rec-169" onclick="toggleRecord(1920, 1080, this)">16:9</button>
                     <button class="btn-action" id="btn-rec-916" onclick="toggleRecord(1080, 1920, this)">9:16</button>
@@ -314,8 +305,8 @@
             let rawX = e.clientX * dpr;
             let rawY = e.clientY * dpr;
             
-            mouse.x = (rawX - canvas.width/2) / currentZoom + canvas.width/2;
-            mouse.y = (rawY - canvas.height/2) / currentZoom + canvas.height/2;
+            mouse.x = (rawX - canvas.width/2) / currentZoom - offsetX + canvas.width/2;
+            mouse.y = (rawY - canvas.height/2) / currentZoom - offsetY + canvas.height/2;
             
             mouse.vx = mouse.x - lastMouse.x;
             mouse.vy = mouse.y - lastMouse.y;
@@ -324,7 +315,6 @@
             lastMouse.y = mouse.y;
         });
 
-        // Caché del Espectro
         const brushCache = [];
         const CACHE_STEPS = 100;
         
@@ -498,7 +488,7 @@
             return sys;
         }
 
-        // --- SISTEMA DE EXPORTACIÓN Y GRABACIÓN (50 Mbps Alta Calidad) ---
+        // --- SISTEMA DE EXPORTACIÓN Y GRABACIÓN ROBUSTO ---
         let isRecording = false;
         let mediaRecorder;
         let recordedChunks = [];
@@ -529,7 +519,7 @@
             
             fCtx.fillStyle = '#000000';
             fCtx.fillRect(0, 0, w, h);
-            fCtx.filter = `hue-rotate(${sys.hueShift}deg) blur(10px) contrast(1.3)`;
+            fCtx.filter = `hue-rotate(${sys.hueShift}deg) blur(15px)`;
             fCtx.drawImage(offRaw, 0, 0);
 
             return offFinal;
@@ -566,12 +556,14 @@
 
                 let stream = finalRecCanvas.captureStream(60);
                 
-                // Forzar VP9 o H264 de alta calidad y Bitrate Extremo de 50 Mbps
+                // Forzamos el codec H264 de MP4 primero (compatible con Safari)
                 let options = [
-                    'video/webm;codecs=vp9',
+                    'video/mp4;codecs=h264',
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
                     'video/webm;codecs=h264',
-                    'video/webm',
-                    'video/mp4'
+                    'video/webm;codecs=vp9',
+                    'video/webm'
                 ];
                 
                 let mimeType = '';
@@ -582,9 +574,10 @@
                     }
                 }
                 
+                if(!mimeType) mimeType = 'video/webm'; // Fallback absoluto
+                
                 let ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
                 
-                // Subir VideoBitsPerSecond a 50 Mbps para evitar píxeles
                 mediaRecorder = new MediaRecorder(stream, { 
                     mimeType: mimeType, 
                     videoBitsPerSecond: 50000000 
@@ -606,6 +599,11 @@
                     a.download = `Thermo_Video_${w}x${h}.${ext}`;
                     a.click();
                     window.URL.revokeObjectURL(url);
+                    
+                    // Alerta si el navegador fuerza webm
+                    if(ext === 'webm') {
+                        alert("Nota: Tu navegador grabó el video en formato WEBM de alta calidad. Para grabar un MP4 nativo (perfecto para iPhone o QuickTime), abre esta webapp usando Safari.");
+                    }
                 };
 
                 mediaRecorder.start();
