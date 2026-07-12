@@ -33,8 +33,8 @@
             width: 100vw; height: 100vh;
             z-index: 1;
             touch-action: none; 
-            /* Contraste reducido a 1.7 para permitir que los verdes y amarillos brillen sin quemarse */
-            filter: blur(14px) contrast(1.7);
+            /* Filtro re-calibrado para fusionar los nuevos colores exactos sin quemarlos */
+            filter: blur(12px) contrast(1.6);
         }
 
         .panel {
@@ -135,7 +135,7 @@
                         <span id="v-blood">50%</span>
                     </div>
                     <input type="range" id="s-blood" min="0" max="100" value="50">
-                    <div class="info-text" id="i-blood">Dominant factor. More blood flow increases local surface temperature (red/white areas).</div>
+                    <div class="info-text" id="i-blood">Dominant factor. More blood flow increases local surface temperature (red areas).</div>
                 </div>
 
                 <div class="slider-row">
@@ -273,13 +273,14 @@
         
         window.addEventListener('resize', resize);
         
+        // Zoom inicial al pecho (Mega Zoom)
         let currentZoom = 4.5; 
         
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
-                // 1. ZOOM MÁS RÁPIDO Y EFICIENTE: Se incrementó el multiplicador de -0.002 a -0.008
-                currentZoom += e.deltaY * -0.008; 
+                // Aún más rápido y fluido el zoom (de 0.008 a 0.012)
+                currentZoom += e.deltaY * -0.012; 
                 currentZoom = Math.max(0.4, Math.min(currentZoom, 6));
             }
         }, { passive: false });
@@ -298,9 +299,33 @@
             lastMouse.y = mouse.y;
         });
 
+        // --- PALETA CIENTÍFICA (Rainbow/Ironbow Real) ---
+        // Elimina el blanco y usa Morado -> Azul -> Cyan -> Verde -> Amarillo -> Rojo
+        function getTempColor(t, alpha) {
+            t = Math.max(0, Math.min(1, t)); // Clampear entre 0 y 1
+            let r=0, g=0, b=0;
+            if (t < 0.2) {
+                let p = t / 0.2; // Morado a Azul
+                r = 128 * (1 - p); g = 0; b = 128 + 127 * p;
+            } else if (t < 0.4) {
+                let p = (t - 0.2) / 0.2; // Azul a Cyan
+                r = 0; g = 255 * p; b = 255;
+            } else if (t < 0.6) {
+                let p = (t - 0.4) / 0.2; // Cyan a Verde
+                r = 0; g = 255; b = 255 * (1 - p);
+            } else if (t < 0.8) {
+                let p = (t - 0.6) / 0.2; // Verde a Amarillo
+                r = 255 * p; g = 255; b = 0;
+            } else {
+                let p = (t - 0.8) / 0.2; // Amarillo a Rojo
+                r = 255; g = 255 * (1 - p); b = 0;
+            }
+            return `rgba(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)},${alpha})`;
+        }
+
         const particles = [];
         class ThermoNode {
-            constructor(bx, by, isExtremity, isAmbient = false) {
+            constructor(bx, by, baseTemp, isExtremity, isAmbient = false) {
                 this.baseX = bx;
                 this.baseY = by;
                 this.x = bx;
@@ -308,15 +333,16 @@
                 this.vx = 0;
                 this.vy = 0;
                 
+                this.baseTemp = baseTemp; // Propiedad central de la termografía
                 this.isAmbient = isAmbient;
-                this.baseRadius = isAmbient ? Math.random() * 45 + 30 : Math.random() * 95 + 75; 
-                this.isInflammation = Math.random() > 0.85;
+                this.baseRadius = isAmbient ? Math.random() * 25 + 15 : Math.random() * 50 + 40; 
+                this.isInflammation = Math.random() > 0.90;
                 this.isExtremity = isExtremity; 
                 
-                // 2. ORBITA ACTIVA: Parámetros para que las partículas giren alrededor
                 this.angle = Math.random() * Math.PI * 2;
-                this.orbitSpeed = (Math.random() - 0.5) * 0.02;
-                this.orbitDist = Math.random() * 600 + 100; // Gran rango de dispersión
+                // Velocidad ambiental reducida a la mitad (0.01)
+                this.orbitSpeed = (Math.random() - 0.5) * 0.01;
+                this.orbitDist = Math.random() * 600 + 100; 
             }
 
             update(sys) {
@@ -324,20 +350,18 @@
                 let targetY = this.baseY;
 
                 if (this.isAmbient) {
-                    // Si son ambientales, orbitan alrededor del centro de la pantalla
                     this.angle += this.orbitSpeed * (1 + sys.muscle * 2);
                     targetX = (window.innerWidth/2) + Math.cos(this.angle) * this.orbitDist;
                     targetY = (window.innerHeight/2) + Math.sin(this.angle) * this.orbitDist;
                 } else {
-                    // Si son del cuerpo, vibran en su lugar
                     this.angle += 0.05 * sys.muscle;
-                    targetX += Math.cos(this.angle) * 20 * sys.muscle;
-                    targetY += Math.sin(this.angle) * 20 * sys.muscle;
+                    targetX += Math.cos(this.angle) * 15 * sys.muscle;
+                    targetY += Math.sin(this.angle) * 15 * sys.muscle;
                 }
 
                 if(sys.disease > 0.5 && Math.random() < 0.05) {
-                    targetX += (Math.random() - 0.5) * (this.isAmbient ? 300 : 120) * sys.disease;
-                    targetY += (Math.random() - 0.5) * (this.isAmbient ? 300 : 120) * sys.disease;
+                    targetX += (Math.random() - 0.5) * (this.isAmbient ? 300 : 80) * sys.disease;
+                    targetY += (Math.random() - 0.5) * (this.isAmbient ? 300 : 80) * sys.disease;
                 }
 
                 let dx = mouse.x - this.x;
@@ -346,41 +370,56 @@
                 
                 if (dist < 250) {
                     let force = (250 - dist) / 250;
-                    let pushFactor = this.isAmbient ? 0.45 : 0.15;
+                    // Interacción del mouse un 20% más fuerte
+                    let pushFactor = this.isAmbient ? 0.54 : 0.18; 
                     this.vx += mouse.vx * force * pushFactor;
                     this.vy += mouse.vy * force * pushFactor;
                 }
 
-                let springTension = this.isAmbient ? 0.01 : 0.06;
+                let springTension = this.isAmbient ? 0.01 : 0.08;
                 let springForceX = (targetX - this.x) * springTension;
                 let springForceY = (targetY - this.y) * springTension;
                 
                 this.vx += springForceX;
                 this.vy += springForceY;
 
-                this.vx *= 0.88; 
-                this.vy *= 0.88;
+                this.vx *= 0.85; 
+                this.vy *= 0.85;
                 this.x += this.vx;
                 this.y += this.vy;
             }
 
             draw(sys, ctx) {
-                let ageFactor = this.isExtremity ? (1 - sys.age * 0.5) : 1;
-                let currentRadius = this.baseRadius * (1 - (sys.fat * 0.3)) * ageFactor;
-                
+                let currentRadius = this.baseRadius * (1 - (sys.fat * 0.2));
                 if(currentRadius <= 0) return;
 
-                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
-                let heat = this.isInflammation ? (1 + sys.inflammation) : sys.blood;
-                let alphaMult = this.isAmbient ? 0.6 : 0.9; 
+                // CÁLCULO TERMODINÁMICO DEL NODO
+                let nodeTemp = this.baseTemp;
+                
+                // Inflamación causa picos aleatorios locales
+                if (this.isInflammation) nodeTemp += sys.inflammation * 0.4;
+                
+                // La sangre calienta, el sudor enfría, el ambiente afecta general
+                nodeTemp += (sys.blood - 0.5) * 0.4;
+                nodeTemp -= sys.sweat * (1 - sys.humidity) * 0.5;
+                nodeTemp += (sys.ambient - 0.5) * 0.5;
+                nodeTemp += sys.muscle * 0.2;
 
-                // 4. ESPECTRO COMPLETO Y REALISTA: Agregamos Amarillo y Verde al gradiente
-                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.45 * heat * alphaMult})`);   // Blanco/Núcleo
-                gradient.addColorStop(0.15, `rgba(255, 0, 0, ${0.5 * heat * alphaMult})`);      // Rojo
-                gradient.addColorStop(0.35, `rgba(255, 255, 0, ${0.4 * heat * alphaMult})`);    // Amarillo
-                gradient.addColorStop(0.6, `rgba(0, 255, 0, ${0.3 * heat * alphaMult})`);       // Verde
-                gradient.addColorStop(0.85, `rgba(0, 150, 255, ${0.2 * alphaMult})`);           // Azul
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');                                   // Transparente
+                // Las extremidades sufren más con la edad (mala circulación periférica)
+                if (this.isExtremity) {
+                    nodeTemp -= sys.age * 0.35;
+                }
+
+                // Generar Gradiente Radial Termográfico (Sin Blanco)
+                let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
+                let alphaMult = this.isAmbient ? 0.4 : 0.8;
+
+                // El centro del nodo es su temperatura calculada
+                gradient.addColorStop(0, getTempColor(nodeTemp, 1.0 * alphaMult)); 
+                // Se enfría hacia los bordes
+                gradient.addColorStop(0.5, getTempColor(nodeTemp - 0.15, 0.6 * alphaMult));
+                gradient.addColorStop(0.8, getTempColor(nodeTemp - 0.3, 0.2 * alphaMult));
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
@@ -389,26 +428,64 @@
             }
         }
 
+        // Función auxiliar para trazar líneas de anatomía
+        function fillLine(startX, startY, endX, endY, density, baseTemp, isExt) {
+            let dx = endX - startX;
+            let dy = endY - startY;
+            let steps = density;
+            for(let i = 0; i <= steps; i++) {
+                let px = startX + (dx * (i/steps)) + (Math.random()-0.5)*30;
+                let py = startY + (dy * (i/steps)) + (Math.random()-0.5)*30;
+                particles.push(new ThermoNode(px, py, baseTemp, isExt));
+            }
+        }
+
         function initBody() {
             particles.length = 0; 
             let cx = canvas.width / 2;
             let cy = canvas.height / 2;
 
-            // Cuerpo más denso
-            for(let i = 0; i < 140; i++) {
-                let rx = (Math.random() - 0.5) * 230 + (Math.random() * 30); 
-                let ry = (Math.random() - 0.5) * 360;
-                particles.push(new ThermoNode(cx + rx, cy + ry, false));
-            }
-            for(let i = 0; i < 40; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 270 + (Math.random()-0.5)*110, true));
-            for(let i = 0; i < 35; i++) particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*75, cy - 40 + (Math.random()-0.5)*210, true)); 
-            for(let i = 0; i < 35; i++) particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*85, cy + 20 + (Math.random()-0.5)*190, true)); 
-            for(let i = 0; i < 45; i++) particles.push(new ThermoNode(cx - 95 + (Math.random()-0.5)*95, cy + 280 + (Math.random()-0.5)*230, true)); 
-            for(let i = 0; i < 45; i++) particles.push(new ThermoNode(cx + 105 + (Math.random()-0.5)*85, cy + 300 + (Math.random()-0.5)*210, true)); 
+            // --- ANATOMÍA DEFINIDA AL 70% ---
+            
+            // Cabeza (Core secundario, Temp: 0.8)
+            for(let i=0; i<30; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*70, cy - 230 + (Math.random()-0.5)*80, 0.8, false));
+            // Cuello
+            for(let i=0; i<15; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*40, cy - 160 + (Math.random()-0.5)*40, 0.75, false));
+            
+            // Torso (Core principal, Temp: 0.9 Rojo/Amarillo intenso)
+            for(let i=0; i<90; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*160, cy + (Math.random()-0.5)*200, 0.9, false));
+            
+            // Hombros
+            for(let i=0; i<15; i++) particles.push(new ThermoNode(cx - 120 + (Math.random()-0.5)*50, cy - 100 + (Math.random()-0.5)*50, 0.8, true));
+            for(let i=0; i<15; i++) particles.push(new ThermoNode(cx + 120 + (Math.random()-0.5)*50, cy - 100 + (Math.random()-0.5)*50, 0.8, true));
 
-            // 2. ENTORNO VIVO: 350 partículas flotando alrededor (aumento del 40%+)
-            for(let i = 0; i < 350; i++) {
-                particles.push(new ThermoNode(0, 0, false, true));
+            // Brazo Izquierdo (Baja la temperatura al alejarse del core)
+            fillLine(cx - 130, cy - 80, cx - 180, cy + 50, 15, 0.65, true); // Brazo
+            fillLine(cx - 180, cy + 50, cx - 210, cy + 180, 15, 0.5, true); // Antebrazo
+            fillLine(cx - 210, cy + 180, cx - 220, cy + 240, 10, 0.35, true); // Mano (Fría)
+
+            // Brazo Derecho
+            fillLine(cx + 130, cy - 80, cx + 180, cy + 50, 15, 0.65, true);
+            fillLine(cx + 180, cy + 50, cx + 210, cy + 180, 15, 0.5, true);
+            fillLine(cx + 210, cy + 180, cx + 220, cy + 240, 10, 0.35, true);
+
+            // Pierna Izquierda
+            fillLine(cx - 60, cy + 130, cx - 80, cy + 320, 20, 0.7, true); // Muslo
+            fillLine(cx - 80, cy + 320, cx - 90, cy + 520, 20, 0.45, true); // Pantorrilla
+
+            // Pierna Derecha
+            fillLine(cx + 60, cy + 130, cx + 80, cy + 320, 20, 0.7, true);
+            fillLine(cx + 80, cy + 320, cx + 90, cy + 520, 20, 0.45, true);
+
+            // AMBIENTE (Reducido a 80 moléculas, 25% aprox)
+            for(let i = 0; i < 80; i++) {
+                let angle = Math.random() * Math.PI * 2;
+                let distance = 250 + Math.random() * 650; 
+                let px = cx + Math.cos(angle) * distance;
+                let py = cy + Math.sin(angle) * distance;
+                
+                // Temp base ambiental fría (0.3)
+                particles.push(new ThermoNode(px, py, 0.3, false, true));
             }
         }
 
@@ -416,12 +493,12 @@
 
         function updateSystem() {
             let sys = {
-                blood: parseFloat(sliders.blood.value) / 50, 
-                muscle: parseFloat(sliders.muscle.value) / 50,
-                inflammation: parseFloat(sliders.inflammation.value) / 50,
-                ambient: parseFloat(sliders.ambient.value) / 50, 
+                blood: parseFloat(sliders.blood.value) / 100, 
+                muscle: parseFloat(sliders.muscle.value) / 100,
+                inflammation: parseFloat(sliders.inflammation.value) / 100,
+                ambient: parseFloat(sliders.ambient.value) / 100, 
                 humidity: parseFloat(sliders.humidity.value) / 100,
-                sweat: parseFloat(sliders.sweat.value) / 50,
+                sweat: parseFloat(sliders.sweat.value) / 100,
                 age: parseFloat(sliders.age.value) / 100,
                 fat: parseFloat(sliders.fat.value) / 100,
                 disease: parseFloat(sliders.disease.value) / 100
@@ -437,16 +514,6 @@
             document.getElementById('v-fat').textContent = sliders.fat.value + '%';
             document.getElementById('v-disease').textContent = sliders.disease.value + '%';
 
-            // Ajuste para que al 50% de los sliders, el Hue Rotate sea 0 (Mantiene el espectro de color exacto)
-            let evaporativeCooling = (sys.sweat - 1) * (1 - sys.humidity); 
-            let ambientEffect = (sys.ambient - 1) * 45; 
-            let bloodHeating = (sys.blood - 1) * 35;
-
-            let hueShift = (evaporativeCooling * 60) - ambientEffect - bloodHeating;
-            hueShift = Math.max(-60, Math.min(hueShift, 120));
-
-            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(14px) contrast(1.7)`;
-
             return sys;
         }
 
@@ -459,7 +526,8 @@
             ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width/2, -canvas.height/2);
 
-            ctx.globalCompositeOperation = 'lighter';
+            // Mantenemos screen para evitar que los colores sumen a blanco puro tan rápido
+            ctx.globalCompositeOperation = 'screen';
 
             let sys = updateSystem();
 
