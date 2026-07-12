@@ -40,7 +40,7 @@
             touch-action: none; 
         }
 
-        /* 1. Panel Ultra-Reducido (-30%) */
+        /* Panel Ultra-Reducido */
         .panel {
             position: absolute;
             top: 50%;
@@ -49,14 +49,14 @@
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(12px);
-            padding: 16px; /* Menos espacio interior */
+            padding: 16px; 
             z-index: 10;
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .control-panel {
-            width: 175px; /* Reducción drástica del ancho */
+            width: 175px; 
             max-height: 85vh; 
             overflow-y: auto;
             overflow-x: hidden;
@@ -74,7 +74,6 @@
             margin-bottom: 10px; 
         }
         
-        /* Tipografías Micro */
         .header h1 { font-size: 0.65rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
         .status { color: var(--accent-red); font-size: 0.55rem; display: flex; align-items: center; gap: 4px; animation: pulse 2s infinite; font-weight: bold;}
         .status::before { content: ''; width: 4px; height: 4px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 4px var(--accent-red); }
@@ -103,11 +102,13 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Controles de Rango Micro */
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 10px; width: 10px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -3.5px; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: #e2e8f0; border-radius: 1.5px;}
         
+        /* Nuevo track color para el tamaño de partícula */
+        #s-size::-webkit-slider-runnable-track { background: linear-gradient(90deg, #94a3b8, #f8fafc); } 
+
         #s-blood::-webkit-slider-runnable-track { background: #ef4444; } 
         #s-muscle::-webkit-slider-runnable-track { background: #f97316; } 
         #s-inflammation::-webkit-slider-runnable-track { background: #991b1b; } 
@@ -134,6 +135,18 @@
             </div>
 
             <div class="slider-group">
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <div class="header-left">
+                            <span>PARTICLE SIZE</span>
+                            <button class="info-btn" onclick="toggleInfo('i-size', this)">i</button>
+                        </div>
+                        <span id="v-size">100%</span>
+                    </div>
+                    <input type="range" id="s-size" min="10" max="300" value="100">
+                    <div class="info-text" id="i-size">Adjusts the physical diameter of individual thermal nodes. High values create continuous fluid, low values show granular details.</div>
+                </div>
+
                 <div class="slider-row">
                     <div class="slider-header">
                         <div class="header-left">
@@ -259,6 +272,7 @@
         }
 
         const sliders = {
+            size: document.getElementById('s-size'), // Nuevo slider de escala
             blood: document.getElementById('s-blood'),
             muscle: document.getElementById('s-muscle'),
             inflammation: document.getElementById('s-inflammation'),
@@ -288,7 +302,7 @@
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
                 currentZoom += e.deltaY * -0.005; 
-                currentZoom = Math.max(0.4, Math.min(currentZoom, 6)); // Límite de Zoom Out 0.4x
+                currentZoom = Math.max(0.4, Math.min(currentZoom, 6)); 
             }
         }, { passive: false });
 
@@ -309,7 +323,7 @@
             lastMouse.y = mouse.y;
         });
 
-        // Caché del Espectro de Color (Alta Eficiencia)
+        // Caché del Espectro de Color
         const brushCache = [];
         const CACHE_STEPS = 100;
         
@@ -343,7 +357,7 @@
             for (let i = 0; i <= CACHE_STEPS; i++) {
                 let temp = (i / CACHE_STEPS) * 1.2; 
                 let c = document.createElement('canvas');
-                let size = 256; // High-res cache
+                let size = 300; // Pincel más grande para soportar escalas del 300%
                 c.width = size; c.height = size;
                 let cCtx = c.getContext('2d');
                 
@@ -377,7 +391,6 @@
                 this.isAdipose = isAdipose; 
                 
                 this.angle = Math.random() * Math.PI * 2;
-                // 2. ORBITA LOCAL: Órbita sobre su propio eje, no sobre el centro de la pantalla
                 this.orbitDist = (Math.random() * 150 + 50) * dpr; 
                 this.orbitSpeed = (Math.random() - 0.5) * 0.02;
             }
@@ -385,7 +398,6 @@
             update(sys) {
                 this.angle += this.orbitSpeed * (1 + sys.muscle * 3);
                 
-                // Orbitan alrededor de SU PROPIA base, asegurando que cubren toda el área expandida sin agruparse
                 let targetX = this.baseX + Math.cos(this.angle) * this.orbitDist;
                 let targetY = this.baseY + Math.sin(this.angle) * this.orbitDist;
 
@@ -394,7 +406,6 @@
                     targetY += (Math.random() - 0.5) * 200 * dpr * sys.disease;
                 }
 
-                // Dedo / Mouse
                 let dx = mouse.x - this.x;
                 let dy = mouse.y - this.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
@@ -406,7 +417,6 @@
                     this.vy += mouse.vy * force * 0.45;
                 }
 
-                // Resorte local
                 let springTension = 0.015; 
                 let springForceX = (targetX - this.x) * springTension;
                 let springForceY = (targetY - this.y) * springTension;
@@ -422,7 +432,9 @@
 
             draw(sys, ctx) {
                 let ageFactor = this.isPeripheral ? (1 - sys.age * 0.4) : 1;
-                let currentRadius = this.baseRadius * (1 - (sys.fat * 0.15)) * ageFactor;
+                // Multiplicamos por sys.size para controlar el tamaño mediante el UI
+                let currentRadius = this.baseRadius * (1 - (sys.fat * 0.15)) * ageFactor * sys.size;
+                
                 if(currentRadius <= 0) return;
 
                 let nodeTemp = this.baseTemp;
@@ -449,22 +461,21 @@
         function initAbstractFluid() {
             particles.length = 0; 
             
-            // 3. EXPANSIÓN MASIVA: Generamos partículas en un área 3 veces más grande que la pantalla.
-            // Al hacer zoom out a 0.4x, el área visible es 2.5x, por lo tanto 3x cubre absolutamente todo sin márgenes negros.
             let w = canvas.width * 3;
             let h = canvas.height * 3;
             let startX = canvas.width/2 - w/2;
             let startY = canvas.height/2 - h/2;
 
-            // Aumentamos los nodos para cubrir la nueva zona masiva
-            let numParticles = 800; 
+            // 1. MAYOR DENSIDAD BASE: Pasamos de 800 a 1200 partículas para rellenar vacíos por defecto
+            let numParticles = 1200; 
             
             for(let i = 0; i < numParticles; i++) {
                 let px = startX + Math.random() * w;
                 let py = startY + Math.random() * h;
                 
                 let baseTemp = 0.3 + Math.random() * 0.5;
-                let radius = (Math.random() * 150 + 100) * dpr; 
+                // Radio base ampliado para asegurar mayor fusión (sin contar el multiplicador del slider)
+                let radius = (Math.random() * 180 + 120) * dpr; 
                 
                 let isPeripheral = Math.random() > 0.6;
                 let isAdipose = Math.random() > 0.5;
@@ -477,6 +488,7 @@
 
         function updateSystem() {
             let sys = {
+                size: parseFloat(sliders.size.value) / 100, // Variable de Escala de Partícula
                 blood: parseFloat(sliders.blood.value) / 100, 
                 muscle: parseFloat(sliders.muscle.value) / 100,
                 inflammation: parseFloat(sliders.inflammation.value) / 100,
@@ -488,6 +500,7 @@
                 disease: parseFloat(sliders.disease.value) / 100
             };
 
+            document.getElementById('v-size').textContent = sliders.size.value + '%';
             document.getElementById('v-blood').textContent = sliders.blood.value + '%';
             document.getElementById('v-muscle').textContent = sliders.muscle.value + '%';
             document.getElementById('v-inflammation').textContent = sliders.inflammation.value + '%';
