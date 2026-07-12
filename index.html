@@ -33,7 +33,8 @@
             width: 100vw; height: 100vh;
             z-index: 1;
             touch-action: none; 
-            filter: blur(15px) contrast(2.5);
+            /* Contraste reducido a 1.7 para permitir que los verdes y amarillos brillen sin quemarse */
+            filter: blur(14px) contrast(1.7);
         }
 
         .panel {
@@ -58,12 +59,10 @@
             display: flex; flex-direction: column; 
         }
 
-        /* Scrollbar estilizado */
         .control-panel::-webkit-scrollbar { width: 4px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
         .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
 
-        /* Eliminado el 'background' y el 'sticky' para evitar bloques de color superpuestos */
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid var(--border-color); 
@@ -77,7 +76,6 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* Sliders */
         .slider-group { display: flex; flex-direction: column; gap: 16px; padding-bottom: 4px; }
         .slider-row { display: flex; flex-direction: column; gap: 6px; }
         .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--text-muted); font-weight: bold; }
@@ -240,17 +238,14 @@
     </div>
 
     <script>
-        // --- UI Logic ---
         function toggleInfo(id, btnElement) {
             const infoDiv = document.getElementById(id);
-            
             document.querySelectorAll('.info-text').forEach(el => {
                 if (el.id !== id && el.classList.contains('show')) {
                     el.classList.remove('show');
                     el.previousElementSibling.querySelector('.info-btn').classList.remove('active');
                 }
             });
-
             infoDiv.classList.toggle('show');
             btnElement.classList.toggle('active');
         }
@@ -267,7 +262,6 @@
             disease: document.getElementById('s-disease')
         };
 
-        // --- Engine & Canvas ---
         const canvas = document.getElementById('thermo-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -284,9 +278,9 @@
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
-                // Aumenté el factor multiplicador (de 0.002 a 0.006) para un zoom mucho más rápido y responsivo
-                currentZoom += e.deltaY * -0.006;
-                currentZoom = Math.max(0.5, Math.min(currentZoom, 6));
+                // 1. ZOOM MÁS RÁPIDO Y EFICIENTE: Se incrementó el multiplicador de -0.002 a -0.008
+                currentZoom += e.deltaY * -0.008; 
+                currentZoom = Math.max(0.4, Math.min(currentZoom, 6));
             }
         }, { passive: false });
 
@@ -296,13 +290,10 @@
         window.addEventListener('mousemove', (e) => {
             let rawX = e.clientX;
             let rawY = e.clientY;
-            
             mouse.x = (rawX - canvas.width/2) / currentZoom + canvas.width/2;
             mouse.y = (rawY - canvas.height/2) / currentZoom + canvas.height/2;
-            
             mouse.vx = mouse.x - lastMouse.x;
             mouse.vy = mouse.y - lastMouse.y;
-            
             lastMouse.x = mouse.x;
             lastMouse.y = mouse.y;
         });
@@ -318,30 +309,35 @@
                 this.vy = 0;
                 
                 this.isAmbient = isAmbient;
-                this.baseRadius = isAmbient ? Math.random() * 35 + 20 : Math.random() * 90 + 75; 
+                this.baseRadius = isAmbient ? Math.random() * 45 + 30 : Math.random() * 95 + 75; 
                 this.isInflammation = Math.random() > 0.85;
                 this.isExtremity = isExtremity; 
-                this.randomPhase = Math.random() * Math.PI * 2;
+                
+                // 2. ORBITA ACTIVA: Parámetros para que las partículas giren alrededor
+                this.angle = Math.random() * Math.PI * 2;
                 this.orbitSpeed = (Math.random() - 0.5) * 0.02;
-                this.orbitDist = Math.random() * 50 + 20;
+                this.orbitDist = Math.random() * 600 + 100; // Gran rango de dispersión
             }
 
             update(sys) {
-                this.randomPhase += 0.05 * sys.muscle;
                 let targetX = this.baseX;
                 let targetY = this.baseY;
 
                 if (this.isAmbient) {
-                    targetX += Math.cos(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2.5;
-                    targetY += Math.sin(this.randomPhase * this.orbitSpeed) * this.orbitDist * sys.muscle * 2.5;
+                    // Si son ambientales, orbitan alrededor del centro de la pantalla
+                    this.angle += this.orbitSpeed * (1 + sys.muscle * 2);
+                    targetX = (window.innerWidth/2) + Math.cos(this.angle) * this.orbitDist;
+                    targetY = (window.innerHeight/2) + Math.sin(this.angle) * this.orbitDist;
                 } else {
-                    targetX += Math.cos(this.randomPhase) * 20 * sys.muscle;
-                    targetY += Math.sin(this.randomPhase) * 20 * sys.muscle;
+                    // Si son del cuerpo, vibran en su lugar
+                    this.angle += 0.05 * sys.muscle;
+                    targetX += Math.cos(this.angle) * 20 * sys.muscle;
+                    targetY += Math.sin(this.angle) * 20 * sys.muscle;
                 }
 
                 if(sys.disease > 0.5 && Math.random() < 0.05) {
-                    targetX += (Math.random() - 0.5) * (this.isAmbient ? 200 : 120) * sys.disease;
-                    targetY += (Math.random() - 0.5) * (this.isAmbient ? 200 : 120) * sys.disease;
+                    targetX += (Math.random() - 0.5) * (this.isAmbient ? 300 : 120) * sys.disease;
+                    targetY += (Math.random() - 0.5) * (this.isAmbient ? 300 : 120) * sys.disease;
                 }
 
                 let dx = mouse.x - this.x;
@@ -350,12 +346,12 @@
                 
                 if (dist < 250) {
                     let force = (250 - dist) / 250;
-                    let pushFactor = this.isAmbient ? 0.35 : 0.15;
+                    let pushFactor = this.isAmbient ? 0.45 : 0.15;
                     this.vx += mouse.vx * force * pushFactor;
                     this.vy += mouse.vy * force * pushFactor;
                 }
 
-                let springTension = this.isAmbient ? 0.015 : 0.05;
+                let springTension = this.isAmbient ? 0.01 : 0.06;
                 let springForceX = (targetX - this.x) * springTension;
                 let springForceY = (targetY - this.y) * springTension;
                 
@@ -376,15 +372,15 @@
 
                 let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, currentRadius);
                 let heat = this.isInflammation ? (1 + sys.inflammation) : sys.blood;
+                let alphaMult = this.isAmbient ? 0.6 : 0.9; 
 
-                let alphaMult = this.isAmbient ? 0.7 : 1.1; // Aumento de opacidad general para mayor vitalidad
-
-                // Gradientes ajustados para colores más vibrantes y compactos
-                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.45 * heat * alphaMult})`); 
-                gradient.addColorStop(0.2, `rgba(255, 255, 0, ${0.55 * heat * alphaMult})`);
-                gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.45 * heat * alphaMult})`);
-                gradient.addColorStop(0.8, `rgba(0, 0, 255, ${0.25 * alphaMult})`);
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                // 4. ESPECTRO COMPLETO Y REALISTA: Agregamos Amarillo y Verde al gradiente
+                gradient.addColorStop(0, `rgba(255, 255, 255, ${0.45 * heat * alphaMult})`);   // Blanco/Núcleo
+                gradient.addColorStop(0.15, `rgba(255, 0, 0, ${0.5 * heat * alphaMult})`);      // Rojo
+                gradient.addColorStop(0.35, `rgba(255, 255, 0, ${0.4 * heat * alphaMult})`);    // Amarillo
+                gradient.addColorStop(0.6, `rgba(0, 255, 0, ${0.3 * heat * alphaMult})`);       // Verde
+                gradient.addColorStop(0.85, `rgba(0, 150, 255, ${0.2 * alphaMult})`);           // Azul
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');                                   // Transparente
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, currentRadius, 0, Math.PI * 2);
@@ -398,44 +394,21 @@
             let cx = canvas.width / 2;
             let cy = canvas.height / 2;
 
-            // CUERPO MÁS DENSO Y DETALLADO
-            // Torso (de 70 a 120 partículas para rellenar huecos)
-            for(let i = 0; i < 120; i++) {
+            // Cuerpo más denso
+            for(let i = 0; i < 140; i++) {
                 let rx = (Math.random() - 0.5) * 230 + (Math.random() * 30); 
                 let ry = (Math.random() - 0.5) * 360;
                 particles.push(new ThermoNode(cx + rx, cy + ry, false));
             }
-            
-            // Cabeza
-            for(let i = 0; i < 35; i++) {
-                particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 270 + (Math.random()-0.5)*110, true));
-            }
-            
-            // Brazos
-            for(let i = 0; i < 30; i++) {
-                particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*75, cy - 40 + (Math.random()-0.5)*210, true)); 
-            }
-            for(let i = 0; i < 30; i++) {
-                particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*85, cy + 20 + (Math.random()-0.5)*190, true)); 
-            }
-            
-            // Piernas
-            for(let i = 0; i < 40; i++) {
-                particles.push(new ThermoNode(cx - 95 + (Math.random()-0.5)*95, cy + 280 + (Math.random()-0.5)*230, true)); 
-            }
-            for(let i = 0; i < 40; i++) {
-                particles.push(new ThermoNode(cx + 105 + (Math.random()-0.5)*85, cy + 300 + (Math.random()-0.5)*210, true)); 
-            }
+            for(let i = 0; i < 40; i++) particles.push(new ThermoNode(cx + (Math.random()-0.5)*110 + 10, cy - 270 + (Math.random()-0.5)*110, true));
+            for(let i = 0; i < 35; i++) particles.push(new ThermoNode(cx - 180 + (Math.random()-0.5)*75, cy - 40 + (Math.random()-0.5)*210, true)); 
+            for(let i = 0; i < 35; i++) particles.push(new ThermoNode(cx + 220 + (Math.random()-0.5)*85, cy + 20 + (Math.random()-0.5)*190, true)); 
+            for(let i = 0; i < 45; i++) particles.push(new ThermoNode(cx - 95 + (Math.random()-0.5)*95, cy + 280 + (Math.random()-0.5)*230, true)); 
+            for(let i = 0; i < 45; i++) particles.push(new ThermoNode(cx + 105 + (Math.random()-0.5)*85, cy + 300 + (Math.random()-0.5)*210, true)); 
 
-            // AMBIENTE (De 50 a 150 partículas para rellenar los vacíos oscuros del fondo)
-            for(let i = 0; i < 150; i++) {
-                let angle = Math.random() * Math.PI * 2;
-                // Ampliando el rango de dispersión
-                let distance = 350 + Math.random() * 650; 
-                let px = cx + Math.cos(angle) * distance;
-                let py = cy + Math.sin(angle) * distance;
-                
-                particles.push(new ThermoNode(px, py, false, true));
+            // 2. ENTORNO VIVO: 350 partículas flotando alrededor (aumento del 40%+)
+            for(let i = 0; i < 350; i++) {
+                particles.push(new ThermoNode(0, 0, false, true));
             }
         }
 
@@ -464,14 +437,15 @@
             document.getElementById('v-fat').textContent = sliders.fat.value + '%';
             document.getElementById('v-disease').textContent = sliders.disease.value + '%';
 
-            let evaporativeCooling = sys.sweat * (1 - sys.humidity); 
-            let ambientEffect = (sys.ambient - 1) * 35; 
-            let bloodHeating = (sys.blood - 1) * 25;
+            // Ajuste para que al 50% de los sliders, el Hue Rotate sea 0 (Mantiene el espectro de color exacto)
+            let evaporativeCooling = (sys.sweat - 1) * (1 - sys.humidity); 
+            let ambientEffect = (sys.ambient - 1) * 45; 
+            let bloodHeating = (sys.blood - 1) * 35;
 
             let hueShift = (evaporativeCooling * 60) - ambientEffect - bloodHeating;
-            hueShift = Math.max(-50, Math.min(hueShift, 120));
+            hueShift = Math.max(-60, Math.min(hueShift, 120));
 
-            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(15px) contrast(2.5)`;
+            canvas.style.filter = `hue-rotate(${hueShift}deg) blur(14px) contrast(1.7)`;
 
             return sys;
         }
