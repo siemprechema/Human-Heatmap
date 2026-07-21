@@ -9,12 +9,12 @@
 
         :root {
             --bg-color: #000000;
-            --panel-bg: rgba(245, 245, 245, 0.95);
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --accent-red: #ef4444;
+            --panel-bg: rgba(5, 10, 42, 0.9);
+            --text-main: #ffffff;
+            --text-muted: #8ba4e8;
+            --accent-red: #ff3333;
             --accent-blue: #3b82f6;
-            --border-color: rgba(203, 213, 225, 0.8);
+            --border-color: rgba(139, 164, 232, 0.4);
             --font-mono: 'Space Mono', monospace;
         }
 
@@ -23,6 +23,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             font-family: var(--font-mono);
+            font-size: 16px; 
             width: 100vw; height: 100vh;
             overflow: hidden; 
         }
@@ -32,13 +33,16 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            filter: blur(15px);
+            /* Filtro simplificado y físicamente correcto. Sin rotación de hue. */
+            filter: blur(14px) contrast(1.3);
         }
 
         #thermo-canvas {
             width: 100%; height: 100%;
             touch-action: none; 
+            cursor: grab;
         }
+        #thermo-canvas:active { cursor: grabbing; }
 
         .panel {
             position: absolute;
@@ -46,90 +50,90 @@
             left: 20px;
             transform: translateY(-50%);
             background-color: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(12px);
+            border: 2px solid var(--border-color); 
+            backdrop-filter: blur(8px);
             padding: 16px; 
             z-index: 10;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.8); 
         }
 
         .control-panel {
-            width: 175px; 
+            width: 180px; 
             max-height: 85vh; 
             overflow-y: auto;
             overflow-x: hidden;
             display: flex; flex-direction: column; 
         }
 
-        .control-panel::-webkit-scrollbar { width: 3px; }
+        .control-panel::-webkit-scrollbar { width: 4px; }
         .control-panel::-webkit-scrollbar-track { background: transparent; }
-        .control-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+        .control-panel::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
 
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border-color); 
+            border-bottom: 1px dashed var(--border-color); 
             padding-bottom: 10px; 
             margin-bottom: 10px; 
         }
         
-        .header h1 { font-size: 0.65rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
-        .status { color: var(--accent-red); font-size: 0.55rem; display: flex; align-items: center; gap: 4px; animation: pulse 2s infinite; font-weight: bold;}
-        .status::before { content: ''; width: 4px; height: 4px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 4px var(--accent-red); }
+        .header h1 { font-size: 0.8rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
+        .status { color: var(--accent-red); font-size: 0.6rem; display: flex; align-items: center; gap: 4px; animation: pulse 1.5s infinite; font-weight: bold;}
+        .status::before { content: ''; width: 6px; height: 6px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 6px var(--accent-red); }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .slider-group { display: flex; flex-direction: column; gap: 10px; padding-bottom: 2px; }
+        .slider-group { display: flex; flex-direction: column; gap: 12px; padding-bottom: 2px; }
         .slider-row { display: flex; flex-direction: column; gap: 4px; }
-        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.55rem; color: var(--text-muted); font-weight: bold; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.6rem; color: var(--text-muted); font-weight: bold; }
         
         .header-left { display: flex; align-items: center; gap: 6px; }
+        
         .info-btn {
             background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted);
-            border-radius: 50%; width: 10px; height: 10px; font-size: 6px; cursor: pointer;
+            border-radius: 50%; width: 12px; height: 12px; font-size: 7px; cursor: pointer;
             display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); padding: 0; transition: all 0.2s;
         }
-        .info-btn:hover, .info-btn.active { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(59, 130, 246, 0.1); }
+        .info-btn:hover, .info-btn.active { background: var(--text-main); color: var(--panel-bg); border-color: var(--text-main); }
 
         .info-text {
-            display: none; font-size: 0.5rem; color: #f8fafc; background: #1e293b;
-            padding: 8px; border-left: 2px solid var(--accent-blue); line-height: 1.3; 
-            margin-top: 4px; margin-bottom: 2px; border-radius: 3px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: none; font-size: 0.55rem; color: var(--text-main); background: #020516;
+            padding: 8px; border-left: 2px solid var(--text-muted); line-height: 1.3; 
+            margin-top: 4px; margin-bottom: 2px; border-radius: 2px;
         }
-        .info-text.show { display: block; animation: fadeIn 0.2s ease-out; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        .info-text.show { display: block; }
         
         input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 10px; width: 10px; background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -3.5px; border: 1.5px solid white; box-shadow: 0 1px 2px rgba(0,0,0,0.3);}
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 3px; cursor: pointer; background: #e2e8f0; border-radius: 1.5px;}
+        input[type=range]::-webkit-slider-thumb { 
+            -webkit-appearance: none; height: 12px; width: 12px; 
+            background: var(--text-main); border-radius: 50%; cursor: pointer; margin-top: -4px; 
+        }
+        input[type=range]::-webkit-slider-runnable-track { 
+            width: 100%; height: 4px; cursor: pointer; background: var(--border-color); border-radius: 2px;
+        }
         
         #s-size::-webkit-slider-runnable-track { background: linear-gradient(90deg, #94a3b8, #f8fafc); } 
-        #s-blood::-webkit-slider-runnable-track { background: #ef4444; } 
-        #s-muscle::-webkit-slider-runnable-track { background: #f97316; } 
-        #s-inflammation::-webkit-slider-runnable-track { background: #991b1b; } 
-        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #3b82f6, #ef4444); } 
-        #s-humidity::-webkit-slider-runnable-track { background: #06b6d4; } 
-        #s-sweat::-webkit-slider-runnable-track { background: #60a5fa; } 
-        #s-age::-webkit-slider-runnable-track { background: #9ca3af; } 
-        #s-fat::-webkit-slider-runnable-track { background: #fde047; } 
-        #s-disease::-webkit-slider-runnable-track { background: #8b5cf6; } 
+        #s-blood::-webkit-slider-runnable-track { background: #ff3333; } 
+        #s-muscle::-webkit-slider-runnable-track { background: #ff9900; } 
+        #s-inflammation::-webkit-slider-runnable-track { background: #ffffff; } 
+        #s-ambient::-webkit-slider-runnable-track { background: linear-gradient(90deg, #33ccff, #ff3333); } 
+        #s-humidity::-webkit-slider-runnable-track { background: #00ffff; } 
+        #s-sweat::-webkit-slider-runnable-track { background: #3366ff; } 
+        #s-age::-webkit-slider-runnable-track { background: #999999; } 
+        #s-fat::-webkit-slider-runnable-track { background: #ffff00; } 
+        #s-disease::-webkit-slider-runnable-track { background: #cc33ff; } 
 
-        .export-section { margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 10px; }
-        /* Títulos limpiados */
-        .export-title { font-size: 0.55rem; color: var(--text-main); font-weight: bold; margin-bottom: 5px; text-align: center;}
-        .actions-row { display: flex; gap: 5px; justify-content: space-between; margin-bottom: 10px;}
-        .btn-action {
-            flex: 1; background-color: white; border: 1px solid var(--border-color);
-            color: var(--text-main); font-family: var(--font-mono); font-size: 0.5rem;
-            font-weight: bold; padding: 6px 0; border-radius: 3px; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-action:hover { background-color: var(--accent-blue); color: white; border-color: var(--accent-blue); }
-        .btn-action.recording { background-color: var(--accent-red); color: white; border-color: var(--accent-red); animation: recPulse 1s infinite alternate; }
+        .export-section { margin-top: 15px; border-top: 1px dashed var(--border-color); padding-top: 10px; }
+        .export-title { font-size: 0.6rem; color: var(--text-main); text-align: center; margin-bottom: 6px; letter-spacing: 1px;}
+        .actions-row { display: flex; gap: 4px; justify-content: space-between; margin-bottom: 12px;}
         
-        @keyframes recPulse { 0% { opacity: 1; } 100% { opacity: 0.8; } }
+        .btn-action {
+            flex: 1; background-color: var(--bg-color); border: 1px solid var(--text-muted);
+            color: var(--text-main); font-family: var(--font-mono); font-size: 0.55rem;
+            padding: 6px 0; border-radius: 2px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-action:hover { background-color: var(--text-main); color: var(--bg-color); }
+        .btn-action.recording { background-color: var(--accent-red); color: white; border-color: var(--accent-red); animation: pulse 1s infinite alternate; }
 
     </style>
 </head>
@@ -142,7 +146,7 @@
     <div class="panel">
         <div class="control-panel">
             <div class="header">
-                <h1>THERMOGRAPHY STUDIO</h1>
+                <h1>THERMO STUDIO</h1>
                 <div class="status">LIVE</div>
             </div>
 
@@ -150,7 +154,7 @@
                 <div class="slider-row">
                     <div class="slider-header">
                         <div class="header-left">
-                            <span>PARTICLE SIZE</span>
+                            <span>PART_SIZE</span>
                         </div>
                         <span id="v-size">100%</span>
                     </div>
@@ -159,7 +163,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>BLOOD FLOW</span></div>
+                        <div class="header-left"><span>BLOOD_FLOW</span></div>
                         <span id="v-blood">50%</span>
                     </div>
                     <input type="range" id="s-blood" min="0" max="100" value="50">
@@ -167,7 +171,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>MUSCLE ACTIVITY</span></div>
+                        <div class="header-left"><span>MUSCLE_ACT</span></div>
                         <span id="v-muscle">50%</span>
                     </div>
                     <input type="range" id="s-muscle" min="0" max="100" value="50">
@@ -183,7 +187,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>AMBIENT TEMP</span></div>
+                        <div class="header-left"><span>AMBIENT_TMP</span></div>
                         <span id="v-ambient">50%</span>
                     </div>
                     <input type="range" id="s-ambient" min="0" max="100" value="50">
@@ -215,7 +219,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>BODY FAT %</span></div>
+                        <div class="header-left"><span>BODY_FAT_%</span></div>
                         <span id="v-fat">50%</span>
                     </div>
                     <input type="range" id="s-fat" min="0" max="100" value="50">
@@ -223,7 +227,7 @@
 
                 <div class="slider-row">
                     <div class="slider-header">
-                        <div class="header-left"><span>DISEASES (Severity)</span></div>
+                        <div class="header-left"><span>DISEASES</span></div>
                         <span id="v-disease">50%</span>
                     </div>
                     <input type="range" id="s-disease" min="0" max="100" value="50">
@@ -231,14 +235,14 @@
             </div>
 
             <div class="export-section">
-                <div class="export-title">EXPORT</div>
+                <div class="export-title">[ EXPORT ]</div>
                 <div class="actions-row">
                     <button class="btn-action" onclick="exportMedia(1920, 1080, 'png')">16:9</button>
                     <button class="btn-action" onclick="exportMedia(1080, 1920, 'png')">9:16</button>
                     <button class="btn-action" onclick="exportMedia(1080, 1440, 'png')">3:4</button>
                 </div>
                 
-                <div class="export-title">RECORD</div>
+                <div class="export-title">[ RECORD ]</div>
                 <div class="actions-row">
                     <button class="btn-action" id="btn-rec-169" onclick="toggleRecord(1920, 1080, this)">16:9</button>
                     <button class="btn-action" id="btn-rec-916" onclick="toggleRecord(1080, 1920, this)">9:16</button>
@@ -281,6 +285,7 @@
         let currentZoom = 4.5; 
         let offsetX = 0;
         let offsetY = 0;
+        let isDragging = false;
 
         function resize() {
             dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -293,15 +298,30 @@
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
-                currentZoom += e.deltaY * -0.005; 
-                currentZoom = Math.max(0.4, Math.min(currentZoom, 6)); 
+                if (e.ctrlKey || e.metaKey || e.shiftKey) {
+                    currentZoom += e.deltaY * -0.01; 
+                    currentZoom = Math.max(0.4, Math.min(currentZoom, 8));
+                } else {
+                    offsetX -= e.deltaX * 2;
+                    offsetY -= e.deltaY * 2;
+                }
             }
         }, { passive: false });
+
+        window.addEventListener('mousedown', (e) => {
+            if(!e.target.closest('.panel')) isDragging = true;
+        });
+        window.addEventListener('mouseup', () => isDragging = false);
+        window.addEventListener('mouseleave', () => isDragging = false);
 
         let mouse = { x: window.innerWidth/2, y: window.innerHeight/2, vx: 0, vy: 0 };
         let lastMouse = { x: mouse.x, y: mouse.y };
 
         window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                offsetX += e.movementX * 1.5;
+                offsetY += e.movementY * 1.5;
+            }
             let rawX = e.clientX * dpr;
             let rawY = e.clientY * dpr;
             
@@ -315,33 +335,62 @@
             lastMouse.y = mouse.y;
         });
 
+        // --- MOTOR DE COLORIMETRÍA CIENTÍFICA (Rainbow HC Palette) ---
         const brushCache = [];
         const CACHE_STEPS = 100;
         
         function getTempColor(t, alpha) {
-            t = Math.max(0, Math.min(1.2, t)); 
-            let r=0, g=0, b=0;
-            if (t < 0.2) { let p = t / 0.2; r = 75 * (1 - p); g = 0; b = 130 + 125 * p; }
-            else if (t < 0.4) { let p = (t - 0.2) / 0.2; r = 0; g = 255 * p; b = 255; }
-            else if (t < 0.6) { let p = (t - 0.4) / 0.2; r = 0; g = 255; b = 255 * (1 - p); }
-            else if (t < 0.8) { let p = (t - 0.6) / 0.2; r = 255 * p; g = 255; b = 0; }
-            else if (t < 1.0) { let p = (t - 0.8) / 0.2; r = 255; g = 255 * (1 - p); b = 0; }
-            else { let p = (t - 1.0) / 0.2; r = 255; g = 255 * p; b = 255 * p; }
-            return `rgba(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)},${alpha})`;
+            // Normalizamos la temperatura de 0 a 1.2 hacia 0.0 - 1.0 para el espectro de color
+            let normT = Math.max(0, Math.min(1.0, t / 1.2)); 
+            
+            // Stops científicos de paleta termográfica médica
+            const stops = [
+                { v: 0.00, c: [0, 0, 10] },       // Negro/Fondo
+                { v: 0.15, c: [0, 0, 150] },      // Azul oscuro
+                { v: 0.30, c: [0, 100, 255] },    // Azul brillante
+                { v: 0.45, c: [0, 255, 255] },    // Cyan
+                { v: 0.60, c: [0, 255, 50] },     // Verde brillante
+                { v: 0.75, c: [255, 255, 0] },    // Amarillo
+                { v: 0.85, c: [255, 100, 0] },    // Naranja
+                { v: 0.95, c: [255, 0, 0] },      // Rojo intenso
+                { v: 1.00, c: [255, 255, 255] }   // Blanco puro (Pico térmico)
+            ];
+            
+            let lower = stops[0];
+            let upper = stops[stops.length - 1];
+            
+            for (let i = 0; i < stops.length - 1; i++) {
+                if (normT >= stops[i].v && normT <= stops[i+1].v) {
+                    lower = stops[i];
+                    upper = stops[i+1];
+                    break;
+                }
+            }
+            
+            let range = upper.v - lower.v;
+            let p = range === 0 ? 0 : (normT - lower.v) / range;
+            
+            let r = Math.floor(lower.c[0] + (upper.c[0] - lower.c[0]) * p);
+            let g = Math.floor(lower.c[1] + (upper.c[1] - lower.c[1]) * p);
+            let b = Math.floor(lower.c[2] + (upper.c[2] - lower.c[2]) * p);
+            
+            return `rgba(${r},${g},${b},${alpha})`;
         }
 
         function initBrushes() {
             for (let i = 0; i <= CACHE_STEPS; i++) {
                 let temp = (i / CACHE_STEPS) * 1.2; 
                 let c = document.createElement('canvas');
-                let size = 300; 
+                let size = 256; 
                 c.width = size; c.height = size;
                 let cCtx = c.getContext('2d');
                 
                 let grad = cCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+                
+                // Mapeo perfecto del gradiente desde el núcleo hacia el borde exterior
                 grad.addColorStop(0, getTempColor(temp, 1.0)); 
-                grad.addColorStop(0.35, getTempColor(temp - 0.05, 0.8));
-                grad.addColorStop(0.7, getTempColor(temp - 0.15, 0.3));
+                grad.addColorStop(0.3, getTempColor(temp - 0.1, 0.8));
+                grad.addColorStop(0.6, getTempColor(temp - 0.25, 0.35));
                 grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
                 
                 cCtx.fillStyle = grad;
@@ -363,7 +412,7 @@
                 
                 this.baseTemp = baseTemp;
                 this.baseRadius = radius; 
-                this.isInflammation = Math.random() > 0.95; 
+                this.isInflammation = Math.random() > 0.96; 
                 this.isPeripheral = isPeripheral; 
                 this.isAdipose = isAdipose; 
                 
@@ -387,7 +436,7 @@
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 
                 let interactionRadius = 400 * dpr; 
-                if (dist < interactionRadius) {
+                if (dist < interactionRadius && !isDragging) {
                     let force = (interactionRadius - dist) / interactionRadius;
                     this.vx += mouse.vx * force * 0.45;
                     this.vy += mouse.vy * force * 0.45;
@@ -409,21 +458,21 @@
             draw(sys, ctx) {
                 let ageFactor = this.isPeripheral ? (1 - sys.age * 0.4) : 1;
                 let currentRadius = this.baseRadius * (1 - (sys.fat * 0.15)) * ageFactor * sys.size;
-                
                 if(currentRadius <= 0) return;
 
-                let nodeTemp = this.baseTemp;
+                // --- CÁLCULO TERMODINÁMICO EXACTO POR NODO ---
+                // En lugar de aplicar CSS global, el calor afecta directamente el valor (0.0 a 1.2) del nodo
+                let nodeTemp = this.baseTemp + sys.globalTempOffset;
                 
                 if (this.isInflammation) nodeTemp += sys.inflammation * 0.6;
-                nodeTemp += (sys.blood - 0.5) * 0.5;
-                nodeTemp -= sys.sweat * (1 - sys.humidity) * 0.7;
-                nodeTemp += (sys.ambient - 0.5) * 0.6;
                 nodeTemp += sys.muscle * 0.3;
                 if (this.isAdipose) nodeTemp -= sys.fat * 0.35;
                 if (this.isPeripheral) nodeTemp -= sys.age * 0.5; 
 
+                // Limitar con seguridad
                 nodeTemp = Math.max(0, Math.min(1.2, nodeTemp));
 
+                // Seleccionar el pincel pre-renderizado del color correspondiente
                 let cacheIndex = Math.floor((nodeTemp / 1.2) * CACHE_STEPS);
                 cacheIndex = Math.max(0, Math.min(CACHE_STEPS, cacheIndex));
                 let brush = brushCache[cacheIndex];
@@ -444,7 +493,9 @@
             for(let i = 0; i < numParticles; i++) {
                 let px = startX + Math.random() * w;
                 let py = startY + Math.random() * h;
-                let baseTemp = 0.3 + Math.random() * 0.5;
+                
+                // Temperatura base (Verde/Amarillo medio)
+                let baseTemp = 0.4 + Math.random() * 0.4;
                 let radius = (Math.random() * 180 + 120) * dpr; 
                 let isPeripheral = Math.random() > 0.6;
                 let isAdipose = Math.random() > 0.5;
@@ -479,11 +530,13 @@
             document.getElementById('v-fat').textContent = sliders.fat.value + '%';
             document.getElementById('v-disease').textContent = sliders.disease.value + '%';
             
+            // --- CÁLCULO DE OFFSET TÉRMICO GLOBAL (Científico) ---
             let evaporativeCooling = sys.sweat * (1 - sys.humidity); 
-            let ambientEffect = (sys.ambient - 0.5) * 0.6; 
-            let bloodHeating = (sys.blood - 0.5) * 0.5;
-            let hueShift = (evaporativeCooling * 40) - (ambientEffect * 30) - (bloodHeating * 20);
-            sys.hueShift = Math.max(-40, Math.min(hueShift, 80));
+            let ambientEffect = (sys.ambient - 0.5); 
+            let bloodHeating = (sys.blood - 0.5);
+            
+            // Reemplazamos la "rotación CSS" por un impacto real en la temperatura
+            sys.globalTempOffset = (bloodHeating * 0.4) - (evaporativeCooling * 0.5) + (ambientEffect * 0.4);
 
             return sys;
         }
@@ -507,7 +560,7 @@
             rCtx.save();
             rCtx.translate(w/2, h/2);
             rCtx.scale(currentZoom, currentZoom);
-            rCtx.translate(-canvas.width/2, -canvas.height/2);
+            rCtx.translate(-canvas.width/2 + offsetX, -canvas.height/2 + offsetY);
             
             rCtx.globalCompositeOperation = 'source-over';
             particles.forEach(p => p.draw(sys, rCtx));
@@ -519,7 +572,9 @@
             
             fCtx.fillStyle = '#000000';
             fCtx.fillRect(0, 0, w, h);
-            fCtx.filter = `hue-rotate(${sys.hueShift}deg) blur(15px)`;
+            
+            // El filtro CSS ya no rota los colores, solo mantiene la fusión suave y contrastada
+            fCtx.filter = `blur(10px) contrast(1.3)`;
             fCtx.drawImage(offRaw, 0, 0);
 
             return offFinal;
@@ -556,7 +611,6 @@
 
                 let stream = finalRecCanvas.captureStream(60);
                 
-                // Forzamos el codec H264 de MP4 primero (compatible con Safari)
                 let options = [
                     'video/mp4;codecs=h264',
                     'video/mp4;codecs=avc1',
@@ -574,8 +628,7 @@
                     }
                 }
                 
-                if(!mimeType) mimeType = 'video/webm'; // Fallback absoluto
-                
+                if(!mimeType) mimeType = 'video/webm'; 
                 let ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
                 
                 mediaRecorder = new MediaRecorder(stream, { 
@@ -600,9 +653,8 @@
                     a.click();
                     window.URL.revokeObjectURL(url);
                     
-                    // Alerta si el navegador fuerza webm
                     if(ext === 'webm') {
-                        alert("Nota: Tu navegador grabó el video en formato WEBM de alta calidad. Para grabar un MP4 nativo (perfecto para iPhone o QuickTime), abre esta webapp usando Safari.");
+                        alert("Nota: Tu navegador grabó el video en formato WEBM. Para grabar un MP4 nativo directo para redes, por favor abre la webapp usando Safari.");
                     }
                 };
 
@@ -616,14 +668,16 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             ctx.save();
-            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.translate(canvas.width/2 + offsetX, canvas.height/2 + offsetY);
             ctx.scale(currentZoom, currentZoom);
             ctx.translate(-canvas.width/2, -canvas.height/2);
 
             ctx.globalCompositeOperation = 'source-over';
 
             let sys = updateSystem();
-            canvas.style.filter = `hue-rotate(${sys.hueShift}deg) blur(15px)`;
+            
+            // Adiós al hue-rotate global. La ciencia gana.
+            canvas.style.filter = `blur(12px) contrast(1.3)`;
 
             mouse.vx *= 0.85;
             mouse.vy *= 0.85;
