@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Thermography Studio</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         :root {
             --bg-color: #000000;
@@ -15,7 +15,7 @@
             --accent-red: #ff3333;
             --accent-blue: #3b82f6;
             --border-color: rgba(139, 164, 232, 0.4);
-            --font-mono: 'Space Mono', monospace;
+            --font-mono: 'VT323', monospace;
         }
 
         body, html {
@@ -26,6 +26,8 @@
             font-size: 16px; 
             width: 100vw; height: 100vh;
             overflow: hidden; 
+            /* Evita el scroll elástico molesto en móviles */
+            overscroll-behavior: none; 
         }
 
         #canvas-wrapper {
@@ -33,7 +35,6 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 1;
-            /* Filtro simplificado y físicamente correcto. Sin rotación de hue. */
             filter: blur(14px) contrast(1.3);
         }
 
@@ -56,19 +57,25 @@
             z-index: 10;
             border-radius: 4px;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.8); 
+            transition: all 0.3s ease;
         }
 
         .control-panel {
             width: 180px; 
-            max-height: 85vh; 
-            overflow-y: auto;
-            overflow-x: hidden;
             display: flex; flex-direction: column; 
         }
+        
+        /* Contenedor que se puede colapsar */
+        #panel-content {
+            max-height: 80vh; 
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+        }
 
-        .control-panel::-webkit-scrollbar { width: 4px; }
-        .control-panel::-webkit-scrollbar-track { background: transparent; }
-        .control-panel::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+        #panel-content::-webkit-scrollbar { width: 4px; }
+        #panel-content::-webkit-scrollbar-track { background: transparent; }
+        #panel-content::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
 
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
@@ -78,8 +85,16 @@
         }
         
         .header h1 { font-size: 0.8rem; margin: 0; letter-spacing: 0.5px; color: var(--text-main); font-weight: bold;}
+        .status-container { display: flex; align-items: center; gap: 8px;}
         .status { color: var(--accent-red); font-size: 0.6rem; display: flex; align-items: center; gap: 4px; animation: pulse 1.5s infinite; font-weight: bold;}
         .status::before { content: ''; width: 6px; height: 6px; background-color: var(--accent-red); border-radius: 50%; box-shadow: 0 0 6px var(--accent-red); }
+        
+        /* Botón para colapsar panel en móvil */
+        .collapse-btn {
+            background: transparent; border: 1px solid var(--text-muted); color: var(--text-main);
+            font-family: var(--font-mono); font-size: 0.7rem; cursor: pointer;
+            width: 18px; height: 18px; display: flex; align-items: center; justify-content: center;
+        }
 
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
@@ -135,6 +150,20 @@
         .btn-action:hover { background-color: var(--text-main); color: var(--bg-color); }
         .btn-action.recording { background-color: var(--accent-red); color: white; border-color: var(--accent-red); animation: pulse 1s infinite alternate; }
 
+        /* --- REGLAS RESPONSIVAS PARA SMARTPHONES --- */
+        @media (max-width: 768px) {
+            .panel {
+                top: 15px; /* En móvil, mejor arriba a la izquierda para no tapar el centro */
+                left: 15px;
+                transform: none;
+                padding: 12px;
+                width: auto;
+            }
+            .control-panel { width: 160px; }
+            #panel-content { max-height: 60vh; }
+            .header h1 { font-size: 0.7rem; }
+        }
+
     </style>
 </head>
 <body>
@@ -143,116 +172,134 @@
         <canvas id="thermo-canvas"></canvas>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="main-panel">
         <div class="control-panel">
             <div class="header">
                 <h1>THERMO STUDIO</h1>
-                <div class="status">LIVE</div>
+                <div class="status-container">
+                    <div class="status">LIVE</div>
+                    <button class="collapse-btn" id="btn-collapse" title="Toggle Panel">-</button>
+                </div>
             </div>
 
-            <div class="slider-group">
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left">
-                            <span>PART_SIZE</span>
+            <div id="panel-content">
+                <div class="slider-group">
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left">
+                                <span>PART_SIZE</span>
+                            </div>
+                            <span id="v-size">100%</span>
                         </div>
-                        <span id="v-size">100%</span>
+                        <input type="range" id="s-size" min="10" max="300" value="100">
                     </div>
-                    <input type="range" id="s-size" min="10" max="300" value="100">
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>BLOOD_FLOW</span></div>
+                            <span id="v-blood">50%</span>
+                        </div>
+                        <input type="range" id="s-blood" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>MUSCLE_ACT</span></div>
+                            <span id="v-muscle">50%</span>
+                        </div>
+                        <input type="range" id="s-muscle" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>INFLAMMATION</span></div>
+                            <span id="v-inflammation">50%</span>
+                        </div>
+                        <input type="range" id="s-inflammation" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>AMBIENT_TMP</span></div>
+                            <span id="v-ambient">50%</span>
+                        </div>
+                        <input type="range" id="s-ambient" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>HUMIDITY</span></div>
+                            <span id="v-humidity">50%</span>
+                        </div>
+                        <input type="range" id="s-humidity" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>SWEATING</span></div>
+                            <span id="v-sweat">50%</span>
+                        </div>
+                        <input type="range" id="s-sweat" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>AGE</span></div>
+                            <span id="v-age">50 YRS</span>
+                        </div>
+                        <input type="range" id="s-age" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>BODY_FAT_%</span></div>
+                            <span id="v-fat">50%</span>
+                        </div>
+                        <input type="range" id="s-fat" min="0" max="100" value="50">
+                    </div>
+
+                    <div class="slider-row">
+                        <div class="slider-header">
+                            <div class="header-left"><span>DISEASES</span></div>
+                            <span id="v-disease">50%</span>
+                        </div>
+                        <input type="range" id="s-disease" min="0" max="100" value="50">
+                    </div>
                 </div>
 
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>BLOOD_FLOW</span></div>
-                        <span id="v-blood">50%</span>
+                <div class="export-section">
+                    <div class="export-title">[ EXPORT ]</div>
+                    <div class="actions-row">
+                        <button class="btn-action" onclick="exportMedia(1920, 1080, 'png')">16:9</button>
+                        <button class="btn-action" onclick="exportMedia(1080, 1920, 'png')">9:16</button>
+                        <button class="btn-action" onclick="exportMedia(1080, 1440, 'png')">3:4</button>
                     </div>
-                    <input type="range" id="s-blood" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>MUSCLE_ACT</span></div>
-                        <span id="v-muscle">50%</span>
+                    
+                    <div class="export-title">[ RECORD ]</div>
+                    <div class="actions-row">
+                        <button class="btn-action" id="btn-rec-169" onclick="toggleRecord(1920, 1080, this)">16:9</button>
+                        <button class="btn-action" id="btn-rec-916" onclick="toggleRecord(1080, 1920, this)">9:16</button>
+                        <button class="btn-action" id="btn-rec-34" onclick="toggleRecord(1080, 1440, this)">3:4</button>
                     </div>
-                    <input type="range" id="s-muscle" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>INFLAMMATION</span></div>
-                        <span id="v-inflammation">50%</span>
-                    </div>
-                    <input type="range" id="s-inflammation" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>AMBIENT_TMP</span></div>
-                        <span id="v-ambient">50%</span>
-                    </div>
-                    <input type="range" id="s-ambient" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>HUMIDITY</span></div>
-                        <span id="v-humidity">50%</span>
-                    </div>
-                    <input type="range" id="s-humidity" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>SWEATING</span></div>
-                        <span id="v-sweat">50%</span>
-                    </div>
-                    <input type="range" id="s-sweat" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>AGE</span></div>
-                        <span id="v-age">50 YRS</span>
-                    </div>
-                    <input type="range" id="s-age" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>BODY_FAT_%</span></div>
-                        <span id="v-fat">50%</span>
-                    </div>
-                    <input type="range" id="s-fat" min="0" max="100" value="50">
-                </div>
-
-                <div class="slider-row">
-                    <div class="slider-header">
-                        <div class="header-left"><span>DISEASES</span></div>
-                        <span id="v-disease">50%</span>
-                    </div>
-                    <input type="range" id="s-disease" min="0" max="100" value="50">
-                </div>
-            </div>
-
-            <div class="export-section">
-                <div class="export-title">[ EXPORT ]</div>
-                <div class="actions-row">
-                    <button class="btn-action" onclick="exportMedia(1920, 1080, 'png')">16:9</button>
-                    <button class="btn-action" onclick="exportMedia(1080, 1920, 'png')">9:16</button>
-                    <button class="btn-action" onclick="exportMedia(1080, 1440, 'png')">3:4</button>
-                </div>
-                
-                <div class="export-title">[ RECORD ]</div>
-                <div class="actions-row">
-                    <button class="btn-action" id="btn-rec-169" onclick="toggleRecord(1920, 1080, this)">16:9</button>
-                    <button class="btn-action" id="btn-rec-916" onclick="toggleRecord(1080, 1920, this)">9:16</button>
-                    <button class="btn-action" id="btn-rec-34" onclick="toggleRecord(1080, 1440, this)">3:4</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Lógica Colapsable de UI (Ideal para móvil)
+        document.getElementById('btn-collapse').addEventListener('click', function() {
+            const content = document.getElementById('panel-content');
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                this.textContent = '-';
+            } else {
+                content.style.display = 'none';
+                this.textContent = '+';
+            }
+        });
+
+        // Toggle info tooltips
         function toggleInfo(id, btnElement) {
             const infoDiv = document.getElementById(id);
             document.querySelectorAll('.info-text').forEach(el => {
@@ -295,6 +342,7 @@
         }
         window.addEventListener('resize', resize);
         
+        // --- NAVEGACIÓN MOUSE ---
         window.addEventListener('wheel', (e) => {
             if(!e.target.closest('.panel')) {
                 e.preventDefault();
@@ -327,33 +375,90 @@
             
             mouse.x = (rawX - canvas.width/2) / currentZoom - offsetX + canvas.width/2;
             mouse.y = (rawY - canvas.height/2) / currentZoom - offsetY + canvas.height/2;
-            
             mouse.vx = mouse.x - lastMouse.x;
             mouse.vy = mouse.y - lastMouse.y;
-            
             lastMouse.x = mouse.x;
             lastMouse.y = mouse.y;
         });
 
-        // --- MOTOR DE COLORIMETRÍA CIENTÍFICA (Rainbow HC Palette) ---
+        // --- NAVEGACIÓN TÁCTIL (MÓVILES) ---
+        let initialPinchDist = null;
+        let lastTouch = null;
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                let rawX = e.touches[0].clientX * dpr;
+                let rawY = e.touches[0].clientY * dpr;
+                lastMouse.x = (rawX - canvas.width/2) / currentZoom - offsetX + canvas.width/2;
+                lastMouse.y = (rawY - canvas.height/2) / currentZoom - offsetY + canvas.height/2;
+                mouse.x = lastMouse.x;
+                mouse.y = lastMouse.y;
+            } else if (e.touches.length === 2) {
+                let dx = e.touches[0].clientX - e.touches[1].clientX;
+                let dy = e.touches[0].clientY - e.touches[1].clientY;
+                initialPinchDist = Math.hypot(dx, dy);
+                lastTouch = null; 
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Evita scroll y refresh del navegador en móvil
+            
+            if (e.touches.length === 1 && lastTouch) {
+                // 1 Dedo: Paneo y movimiento cinético
+                let movementX = e.touches[0].clientX - lastTouch.x;
+                let movementY = e.touches[0].clientY - lastTouch.y;
+                offsetX += movementX * 1.5;
+                offsetY += movementY * 1.5;
+                lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+                let rawX = e.touches[0].clientX * dpr;
+                let rawY = e.touches[0].clientY * dpr;
+                mouse.x = (rawX - canvas.width/2) / currentZoom - offsetX + canvas.width/2;
+                mouse.y = (rawY - canvas.height/2) / currentZoom - offsetY + canvas.height/2;
+                mouse.vx = mouse.x - lastMouse.x;
+                mouse.vy = mouse.y - lastMouse.y;
+                lastMouse.x = mouse.x;
+                lastMouse.y = mouse.y;
+
+            } else if (e.touches.length === 2) {
+                // 2 Dedos: Pinch to Zoom
+                let dx = e.touches[0].clientX - e.touches[1].clientX;
+                let dy = e.touches[0].clientY - e.touches[1].clientY;
+                let dist = Math.hypot(dx, dy);
+                
+                if (initialPinchDist) {
+                    let zoomDelta = (dist - initialPinchDist) * 0.015; // Sensibilidad de zoom táctil
+                    currentZoom += zoomDelta;
+                    currentZoom = Math.max(0.4, Math.min(currentZoom, 8));
+                }
+                initialPinchDist = dist;
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) initialPinchDist = null;
+            if (e.touches.length === 0) lastTouch = null;
+        });
+
+
+        // --- MOTOR DE COLORIMETRÍA CIENTÍFICA ---
         const brushCache = [];
         const CACHE_STEPS = 100;
         
         function getTempColor(t, alpha) {
-            // Normalizamos la temperatura de 0 a 1.2 hacia 0.0 - 1.0 para el espectro de color
             let normT = Math.max(0, Math.min(1.0, t / 1.2)); 
-            
-            // Stops científicos de paleta termográfica médica
             const stops = [
-                { v: 0.00, c: [0, 0, 10] },       // Negro/Fondo
-                { v: 0.15, c: [0, 0, 150] },      // Azul oscuro
-                { v: 0.30, c: [0, 100, 255] },    // Azul brillante
-                { v: 0.45, c: [0, 255, 255] },    // Cyan
-                { v: 0.60, c: [0, 255, 50] },     // Verde brillante
-                { v: 0.75, c: [255, 255, 0] },    // Amarillo
-                { v: 0.85, c: [255, 100, 0] },    // Naranja
-                { v: 0.95, c: [255, 0, 0] },      // Rojo intenso
-                { v: 1.00, c: [255, 255, 255] }   // Blanco puro (Pico térmico)
+                { v: 0.00, c: [0, 0, 10] },       
+                { v: 0.15, c: [0, 0, 150] },      
+                { v: 0.30, c: [0, 100, 255] },    
+                { v: 0.45, c: [0, 255, 255] },    
+                { v: 0.60, c: [0, 255, 50] },     
+                { v: 0.75, c: [255, 255, 0] },    
+                { v: 0.85, c: [255, 100, 0] },    
+                { v: 0.95, c: [255, 0, 0] },      
+                { v: 1.00, c: [255, 255, 255] }   
             ];
             
             let lower = stops[0];
@@ -387,7 +492,6 @@
                 
                 let grad = cCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
                 
-                // Mapeo perfecto del gradiente desde el núcleo hacia el borde exterior
                 grad.addColorStop(0, getTempColor(temp, 1.0)); 
                 grad.addColorStop(0.3, getTempColor(temp - 0.1, 0.8));
                 grad.addColorStop(0.6, getTempColor(temp - 0.25, 0.35));
@@ -460,8 +564,6 @@
                 let currentRadius = this.baseRadius * (1 - (sys.fat * 0.15)) * ageFactor * sys.size;
                 if(currentRadius <= 0) return;
 
-                // --- CÁLCULO TERMODINÁMICO EXACTO POR NODO ---
-                // En lugar de aplicar CSS global, el calor afecta directamente el valor (0.0 a 1.2) del nodo
                 let nodeTemp = this.baseTemp + sys.globalTempOffset;
                 
                 if (this.isInflammation) nodeTemp += sys.inflammation * 0.6;
@@ -469,10 +571,8 @@
                 if (this.isAdipose) nodeTemp -= sys.fat * 0.35;
                 if (this.isPeripheral) nodeTemp -= sys.age * 0.5; 
 
-                // Limitar con seguridad
                 nodeTemp = Math.max(0, Math.min(1.2, nodeTemp));
 
-                // Seleccionar el pincel pre-renderizado del color correspondiente
                 let cacheIndex = Math.floor((nodeTemp / 1.2) * CACHE_STEPS);
                 cacheIndex = Math.max(0, Math.min(CACHE_STEPS, cacheIndex));
                 let brush = brushCache[cacheIndex];
@@ -494,7 +594,6 @@
                 let px = startX + Math.random() * w;
                 let py = startY + Math.random() * h;
                 
-                // Temperatura base (Verde/Amarillo medio)
                 let baseTemp = 0.4 + Math.random() * 0.4;
                 let radius = (Math.random() * 180 + 120) * dpr; 
                 let isPeripheral = Math.random() > 0.6;
@@ -530,18 +629,14 @@
             document.getElementById('v-fat').textContent = sliders.fat.value + '%';
             document.getElementById('v-disease').textContent = sliders.disease.value + '%';
             
-            // --- CÁLCULO DE OFFSET TÉRMICO GLOBAL (Científico) ---
             let evaporativeCooling = sys.sweat * (1 - sys.humidity); 
             let ambientEffect = (sys.ambient - 0.5); 
             let bloodHeating = (sys.blood - 0.5);
-            
-            // Reemplazamos la "rotación CSS" por un impacto real en la temperatura
             sys.globalTempOffset = (bloodHeating * 0.4) - (evaporativeCooling * 0.5) + (ambientEffect * 0.4);
 
             return sys;
         }
 
-        // --- SISTEMA DE EXPORTACIÓN Y GRABACIÓN ROBUSTO ---
         let isRecording = false;
         let mediaRecorder;
         let recordedChunks = [];
@@ -572,8 +667,6 @@
             
             fCtx.fillStyle = '#000000';
             fCtx.fillRect(0, 0, w, h);
-            
-            // El filtro CSS ya no rota los colores, solo mantiene la fusión suave y contrastada
             fCtx.filter = `blur(10px) contrast(1.3)`;
             fCtx.drawImage(offRaw, 0, 0);
 
@@ -652,10 +745,6 @@
                     a.download = `Thermo_Video_${w}x${h}.${ext}`;
                     a.click();
                     window.URL.revokeObjectURL(url);
-                    
-                    if(ext === 'webm') {
-                        alert("Nota: Tu navegador grabó el video en formato WEBM. Para grabar un MP4 nativo directo para redes, por favor abre la webapp usando Safari.");
-                    }
                 };
 
                 mediaRecorder.start();
@@ -676,8 +765,7 @@
 
             let sys = updateSystem();
             
-            // Adiós al hue-rotate global. La ciencia gana.
-            canvas.style.filter = `blur(12px) contrast(1.3)`;
+            canvas.style.filter = `blur(14px) contrast(1.3)`;
 
             mouse.vx *= 0.85;
             mouse.vy *= 0.85;
